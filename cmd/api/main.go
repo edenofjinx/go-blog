@@ -36,8 +36,8 @@ type Application struct {
 // main launches the application
 func main() {
 	var cfg config
-	loadEnvironment(&cfg)
-	loadDSN(&cfg)
+	setEnvironment(&cfg)
+	setDSN(&cfg)
 	setServerPort(&cfg)
 
 	db, err := openDatabase(cfg)
@@ -85,7 +85,7 @@ func openDatabase(cfg config) (*gorm.DB, error) {
 }
 
 // loadEnvironment loads the environment file and sets the env name in config
-func loadEnvironment(cfg *config) {
+func setEnvironment(cfg *config) {
 	flag.StringVar(
 		&cfg.env,
 		"env",
@@ -112,8 +112,8 @@ func loadEnvironment(cfg *config) {
 	}
 }
 
-// loadDSN generates and sets the dsn for the database connection in config
-func loadDSN(cfg *config) {
+// setDSN generates and sets the dsn for the database connection in config
+func setDSN(cfg *config) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DB_USER"),
