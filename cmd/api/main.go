@@ -45,7 +45,7 @@ func main() {
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
 
-	db, err := driver.ConnectSQL(cfg.db.dsn)
+	db, err := driver.ConnectSQL(cfg.db.dsn, app)
 	if err != nil {
 		errorLog.Fatal(err)
 		return
