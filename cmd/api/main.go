@@ -47,12 +47,12 @@ func main() {
 
 	db, err := driver.ConnectSQL(cfg.db.dsn)
 	if err != nil {
-		log.Println(err)
+		errorLog.Fatal(err)
 		return
 	}
 	err = models.SeedData(db)
 	if err != nil {
-		log.Println(err)
+		errorLog.Fatal(err)
 		return
 	}
 
@@ -68,7 +68,8 @@ func main() {
 	}
 	err = srv.ListenAndServe()
 	if err != nil {
-		log.Println(err)
+		errorLog.Fatal(err)
+		return
 	}
 }
 
@@ -85,19 +86,19 @@ func setEnvironment(cfg *serverConfig) {
 	case "production":
 		err := godotenv.Load(".env")
 		if err != nil {
-			log.Fatal("Error loading .env file", err)
+			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = true
 	case "development":
 		err := godotenv.Load(".env." + cfg.env + ".local")
 		if err != nil {
-			log.Fatal("Error loading .env file", err)
+			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = false
 	default:
 		err := godotenv.Load(".env." + cfg.env + ".local")
 		if err != nil {
-			log.Fatal("Error loading .env file", err)
+			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = false
 	}
@@ -121,7 +122,7 @@ func setDSN(cfg *serverConfig) {
 func setServerPort(cfg *serverConfig) {
 	port, err := strconv.Atoi(os.Getenv("APP_PORT"))
 	if err != nil {
-		log.Println(err)
+		errorLog.Fatal(err)
 		return
 	}
 	cfg.port = port

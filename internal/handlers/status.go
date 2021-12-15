@@ -3,7 +3,6 @@ package handlers
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -16,13 +15,13 @@ func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	js, err := json.MarshalIndent(currentStatus, "", "\t")
 	if err != nil {
-		log.Println(err)
+		repo.App.ErrorLog.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	_, err = w.Write(js)
 	if err != nil {
-		log.Println(err)
+		repo.App.ErrorLog.Println(err)
 		return
 	}
 }
