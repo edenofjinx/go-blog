@@ -1,13 +1,13 @@
 package main
 
 import (
+	"bitbucket.org/julius_liaudanskis/go-blog/config"
+	"bitbucket.org/julius_liaudanskis/go-blog/driver"
+	"bitbucket.org/julius_liaudanskis/go-blog/internal/handlers"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"flag"
 	"fmt"
 	"github.com/joho/godotenv"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"log"
 	"net/http"
 	"os"
@@ -19,7 +19,7 @@ import (
 const version = "1.0.0"
 
 //config model for application configuration
-type config struct {
+type serverConfig struct {
 	port int
 	env  string
 	db   struct {
@@ -27,20 +27,25 @@ type config struct {
 	}
 }
 
-//Application holds the application data
-type Application struct {
-	Config   config
-	Database models.MysqlModel
-}
+var app config.AppConfig
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 // main launches the application
 func main() {
-	var cfg config
+	var cfg serverConfig
 	setEnvironment(&cfg)
 	setDSN(&cfg)
 	setServerPort(&cfg)
+	app.AppVersion = version
 
-	db, err := openDatabase(cfg)
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+
+	db, err := driver.ConnectSQL(cfg.db.dsn)
 	if err != nil {
 		log.Println(err)
 		return
@@ -51,14 +56,12 @@ func main() {
 		return
 	}
 
-	app := &Application{
-		Config:   cfg,
-		Database: models.NewDatabase(db),
-	}
+	repo := handlers.NewRepo(&app, db)
+	handlers.NewHandlers(repo)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
+		Handler:      routes(),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
@@ -69,23 +72,8 @@ func main() {
 	}
 }
 
-// openDatabase initialize the database session
-func openDatabase(cfg config) (*gorm.DB, error) {
-	db, err := gorm.Open(
-		mysql.Open(cfg.db.dsn),
-		&gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
-		},
-	)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	return db, nil
-}
-
 // loadEnvironment loads the environment file and sets the env name in config
-func setEnvironment(cfg *config) {
+func setEnvironment(cfg *serverConfig) {
 	flag.StringVar(
 		&cfg.env,
 		"env",
@@ -99,21 +87,25 @@ func setEnvironment(cfg *config) {
 		if err != nil {
 			log.Fatal("Error loading .env file", err)
 		}
+		app.InProduction = true
 	case "development":
 		err := godotenv.Load(".env." + cfg.env + ".local")
 		if err != nil {
 			log.Fatal("Error loading .env file", err)
 		}
+		app.InProduction = false
 	default:
 		err := godotenv.Load(".env." + cfg.env + ".local")
 		if err != nil {
 			log.Fatal("Error loading .env file", err)
 		}
+		app.InProduction = false
 	}
+	app.Environment = cfg.env
 }
 
 // setDSN generates and sets the dsn for the database connection in config
-func setDSN(cfg *config) {
+func setDSN(cfg *serverConfig) {
 	dsn := fmt.Sprintf(
 		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DB_USER"),
@@ -126,7 +118,7 @@ func setDSN(cfg *config) {
 }
 
 // setServerPort sets the server port in app config from the env file
-func setServerPort(cfg *config) {
+func setServerPort(cfg *serverConfig) {
 	port, err := strconv.Atoi(os.Getenv("APP_PORT"))
 	if err != nil {
 		log.Println(err)

@@ -1,17 +1,10 @@
 package models
 
 import (
-	"gorm.io/gorm"
+	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 )
 
-// NewDatabase returns model with the database pool
-func NewDatabase(db *gorm.DB) MysqlModel {
-	return MysqlModel{
-		DB: db,
-	}
-}
-
-func SeedData(db *gorm.DB) error {
+func SeedData(db *driver.DB) error {
 	//if err := db.AutoMigrate(&Product{}); err == nil && db.Migrator().HasTable(&Product{}) {
 	//	if err := db.First(&Product{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
 	//		db.Create(&Product{Code: "D42", Price: 100})
