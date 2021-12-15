@@ -1,5 +1,7 @@
 package repository
 
 type DatabaseRepository interface {
-	AllStatus() bool
+	GetArticlesList()
+	GetArticleById()
+	GetCommentsByArticleId()
 }
