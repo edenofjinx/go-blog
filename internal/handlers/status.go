@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// StatusHandler is a handler for app status
 func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request) {
 	currentStatus := models.AppStatus{
 		Status:      "Available",

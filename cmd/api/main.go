@@ -4,7 +4,7 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 	"bitbucket.org/julius_liaudanskis/go-blog/internal/handlers"
-	"bitbucket.org/julius_liaudanskis/go-blog/models"
+	"bitbucket.org/julius_liaudanskis/go-blog/models/database"
 	"flag"
 	"fmt"
 	"github.com/joho/godotenv"
@@ -50,7 +50,7 @@ func main() {
 		errorLog.Fatal(err)
 		return
 	}
-	err = models.SeedData(db)
+	err = database.SeedData(db)
 	if err != nil {
 		errorLog.Fatal(err)
 		return
@@ -73,7 +73,7 @@ func main() {
 	}
 }
 
-// loadEnvironment loads the environment file and sets the env name in config
+// setEnvironment set the environment file and sets the env name in config
 func setEnvironment(cfg *serverConfig) {
 	flag.StringVar(
 		&cfg.env,
