@@ -8,7 +8,12 @@ import (
 type Article struct {
 	gorm.Model
 	Title   string `gorm:"type:varchar(100)" json:"title"`
+	Content string `gorm:"type:text" json:"-"`
+	UserID  int    `json:"-"`
+	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
+}
+
+type ArticleWithContent struct {
+	Article
 	Content string `gorm:"type:text" json:"content"`
-	UserID  int    `json:"user_id"`
-	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;"`
 }
