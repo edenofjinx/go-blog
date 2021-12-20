@@ -1,23 +1,19 @@
 package dbrepo
 
 import (
+	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"github.com/julienschmidt/httprouter"
 	"gorm.io/gorm"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-func (m *mysqlDatabaseRepo) AllStatus() bool {
-	return true
-}
-
 func (m *mysqlDatabaseRepo) GetArticlesList(r *http.Request) ([]*models.Article, error) {
 	var articles []*models.Article
-	rows := m.DB.Scopes(paginate(r)).Find(&articles)
+	rows := m.DB.Scopes(paginate(r, m.App)).Find(&articles)
 	if rows.Error != nil {
-		log.Println(rows.Error)
+		m.App.ErrorLog.Println(rows.Error)
 		return nil, rows.Error
 	}
 	return articles, nil
@@ -28,7 +24,7 @@ func (m *mysqlDatabaseRepo) GetArticleById(r *http.Request) (models.ArticleWithC
 	params := httprouter.ParamsFromContext(r.Context())
 	articleId, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
-		log.Println(err)
+		m.App.ErrorLog.Println(err)
 		return article, err
 	}
 	row := m.DB.First(&models.Article{}, articleId)
@@ -40,23 +36,32 @@ func (m *mysqlDatabaseRepo) GetCommentsByArticleId(r *http.Request) ([]*models.C
 	params := httprouter.ParamsFromContext(r.Context())
 	articleId, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
-		log.Println(err)
+		m.App.ErrorLog.Println(err)
 		return nil, err
 	}
-	rows := m.DB.Scopes(paginate(r)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
+	rows := m.DB.Scopes(paginate(r, m.App)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
 	if rows.Error != nil {
-		log.Println(rows.Error)
+		m.App.ErrorLog.Println(rows.Error)
 		return nil, rows.Error
 	}
 	return comments, nil
 }
 
-func paginate(r *http.Request) func(db *gorm.DB) *gorm.DB {
+func (m *mysqlDatabaseRepo) VerifyApiKeyExists(apiKey string) bool {
+	var count int64
+	m.DB.Model(&models.User{}).Where(&models.User{ApiKey: apiKey}).Count(&count)
+	if count == 0 {
+		return false
+	}
+	return true
+}
+
+func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		params := httprouter.ParamsFromContext(r.Context())
 		page, err := strconv.Atoi(params.ByName("page"))
 		if err != nil {
-			log.Println(err)
+			config.ErrorLog.Println(err)
 		}
 		if page == 0 {
 			page = 1

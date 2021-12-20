@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -21,7 +20,7 @@ func (repo *Repository) ErrorHandler(w http.ResponseWriter, err error, status ..
 	}
 	writeError := writeJSON(w, statusCode, jsError, "error")
 	if writeError != nil {
-		log.Println(writeError)
+		repo.App.ErrorLog.Println(writeError)
 		return
 	}
 }

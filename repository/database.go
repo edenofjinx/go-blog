@@ -9,4 +9,5 @@ type DatabaseRepository interface {
 	GetArticlesList(r *http.Request) ([]*models.Article, error)
 	GetArticleById(r *http.Request) (models.ArticleWithContent, error)
 	GetCommentsByArticleId(r *http.Request) ([]*models.Comment, error)
+	VerifyApiKeyExists(apiKey string) bool
 }

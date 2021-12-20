@@ -18,7 +18,7 @@ func wrap(next http.Handler) httprouter.Handle {
 // routes holds data of all available routes for the app
 func routes() http.Handler {
 	router := httprouter.New()
-	secure := alice.New(checkToken)
+	secure := alice.New(verifyApiKey)
 
 	unprotectedRoutes(router)
 
