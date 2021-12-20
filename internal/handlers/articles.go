@@ -44,23 +44,3 @@ func (repo *Repository) GetArticleById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
-// GetCommentsByArticleId handler to get comments by article id
-func (repo *Repository) GetCommentsByArticleId(w http.ResponseWriter, r *http.Request) {
-	comments, err := repo.DB.GetCommentsByArticleId(r)
-	if err != nil {
-		repo.App.ErrorLog.Println(err)
-		return
-	}
-	js, err := json.MarshalIndent(comments, "", "\t")
-	if err != nil {
-		repo.App.ErrorLog.Println(err)
-	}
-	w.Header().Set(AppContentType, AppJson)
-	w.WriteHeader(http.StatusAccepted)
-	_, err = w.Write(js)
-	if err != nil {
-		repo.App.ErrorLog.Println(err)
-		return
-	}
-}

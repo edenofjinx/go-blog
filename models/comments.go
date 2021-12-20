@@ -11,3 +11,9 @@ type Comment struct {
 	ArticleID int     `json:"article_id"`
 	Article   Article `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 }
+
+type CommentPayload struct {
+	Content   string `json:"content"`
+	UserID    int    `json:"user_id"`
+	ArticleID int    `json:"article_id"`
+}

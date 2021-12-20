@@ -56,6 +56,14 @@ func (m *mysqlDatabaseRepo) VerifyApiKeyExists(apiKey string) bool {
 	return true
 }
 
+func (m *mysqlDatabaseRepo) InsertComment(comment models.Comment) error {
+	result := m.DB.Create(&comment)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
 func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		params := httprouter.ParamsFromContext(r.Context())

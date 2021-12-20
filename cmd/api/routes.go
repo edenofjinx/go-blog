@@ -27,11 +27,13 @@ func routes() http.Handler {
 }
 
 func unprotectedRoutes(r *httprouter.Router) {
-	r.HandlerFunc(http.MethodGet, "/status", handlers.Repo.StatusHandler)
+	r.HandlerFunc(http.MethodGet, "/v1/status", handlers.Repo.StatusHandler)
 }
 
 func protectedRoutes(r *httprouter.Router, s *alice.Chain) {
-	r.GET("/articles/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetArticlesList)))
-	r.GET("/article/:id", wrap(s.ThenFunc(handlers.Repo.GetArticleById)))
-	r.GET("/article/:id/comments/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetCommentsByArticleId)))
+	r.GET("/v1/articles/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetArticlesList)))
+	r.GET("/v1/article/:id", wrap(s.ThenFunc(handlers.Repo.GetArticleById)))
+	r.GET("/v1/article/:id/comments/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetCommentsByArticleId)))
+
+	r.POST("/v1/comment/save", wrap(s.ThenFunc(handlers.Repo.SaveComment)))
 }
