@@ -18,7 +18,7 @@ func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		repo.App.ErrorLog.Println(err)
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(AppContentType, AppJson)
 	w.WriteHeader(http.StatusAccepted)
 	_, err = w.Write(js)
 	if err != nil {

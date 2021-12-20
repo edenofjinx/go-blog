@@ -16,7 +16,7 @@ func (repo *Repository) GetArticlesList(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		repo.App.ErrorLog.Println(err)
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(AppContentType, AppJson)
 	w.WriteHeader(http.StatusAccepted)
 	_, err = w.Write(js)
 	if err != nil {
@@ -36,7 +36,7 @@ func (repo *Repository) GetArticleById(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		repo.App.ErrorLog.Println(err)
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(AppContentType, AppJson)
 	w.WriteHeader(http.StatusAccepted)
 	_, err = w.Write(js)
 	if err != nil {
@@ -56,7 +56,7 @@ func (repo *Repository) GetCommentsByArticleId(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		repo.App.ErrorLog.Println(err)
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(AppContentType, AppJson)
 	w.WriteHeader(http.StatusAccepted)
 	_, err = w.Write(js)
 	if err != nil {
