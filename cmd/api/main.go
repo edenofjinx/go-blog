@@ -17,6 +17,7 @@ import (
 
 // version current version of the application
 const version = "1.0.0"
+const staticImages = "static/images/"
 
 //config model for application configuration
 type serverConfig struct {
@@ -44,6 +45,7 @@ func main() {
 
 	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.ErrorLog = errorLog
+	app.StaticImages = staticImages
 
 	db, err := driver.ConnectSQL(cfg.db.dsn, app)
 	if err != nil {

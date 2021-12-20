@@ -19,7 +19,7 @@ func wrap(next http.Handler) httprouter.Handle {
 func routes() http.Handler {
 	router := httprouter.New()
 	secure := alice.New(verifyApiKey)
-
+	router.ServeFiles("/static/images/*filepath", http.Dir("static/images"))
 	unprotectedRoutes(router)
 
 	protectedRoutes(router, &secure)

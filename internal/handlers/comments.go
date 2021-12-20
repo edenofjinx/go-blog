@@ -34,8 +34,13 @@ func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 		repo.ErrorHandler(w, err)
 		return
 	}
+	content, err := repo.parseImageTags(payload.Content)
+	if err != nil {
+		repo.ErrorHandler(w, err)
+		return
+	}
 	var comment models.Comment
-	comment.Content = payload.Content
+	comment.Content = content
 	comment.UserID = payload.UserID
 	comment.ArticleID = payload.ArticleID
 	comment.CreatedAt = time.Now()
@@ -46,7 +51,7 @@ func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	message := JsonResponse{
-		Message: "Comment has been successfully inserted.",
+		Message: "Comment has been successfully saved.",
 	}
 	err = repo.ResponseJson(w, http.StatusOK, message, "success")
 	if err != nil {

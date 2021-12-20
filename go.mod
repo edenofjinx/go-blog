@@ -14,4 +14,5 @@ require (
 	github.com/joho/godotenv v1.4.0 // indirect
 	github.com/julienschmidt/httprouter v1.3.0 // indirect
 	github.com/justinas/alice v1.2.0 // indirect
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 )

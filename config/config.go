@@ -11,4 +11,5 @@ type AppConfig struct {
 	InProduction bool
 	Environment  string
 	AppVersion   string
+	StaticImages string
 }
