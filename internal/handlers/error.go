@@ -4,6 +4,7 @@ import (
 	"net/http"
 )
 
+// ErrorHandler handles error responses
 func (repo *Repository) ErrorHandler(w http.ResponseWriter, err error, status ...int) {
 	statusCode := http.StatusBadRequest
 	if len(status) > 0 {

@@ -27,6 +27,7 @@ func (repo *Repository) GetCommentsByArticleId(w http.ResponseWriter, r *http.Re
 	}
 }
 
+// SaveComment saves comment into the database
 func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 	var payload models.CommentPayload
 	err := json.NewDecoder(r.Body).Decode(&payload)

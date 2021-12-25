@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+// DatabaseRepository interface for database requests
 type DatabaseRepository interface {
 	GetArticlesList(r *http.Request) ([]*models.Article, error)
 	GetArticleById(r *http.Request) (models.ArticleWithContent, error)

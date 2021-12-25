@@ -17,11 +17,13 @@ import (
 	"time"
 )
 
+// imageUploadResult hold image upload data
 type imageUploadResult struct {
 	Url   string
 	Error error
 }
 
+// parseImageTags parses image tags and returns correct comment content
 func (repo *Repository) parseImageTags(s string) (string, error) {
 	content, err := html.ParseFragment(
 		strings.NewReader(s),
@@ -59,6 +61,7 @@ func (repo *Repository) parseImageTags(s string) (string, error) {
 	return buf.String(), nil
 }
 
+// saveImages saves base64 images into the server and returns the full url to images
 func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 	resp := imageUploadResult{Url: "", Error: nil}
 	idx := strings.Index(data, ";base64,")
@@ -68,7 +71,7 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 	}
 	ImageType := data[11:idx]
 	rand.Seed(time.Now().UnixNano())
-	imgName := repo.App.StaticImages + randSeq(15)
+	imgName := repo.App.StaticImages + randomSequence(15)
 	var url string
 	unbased, err := base64.StdEncoding.DecodeString(data[idx+8:])
 	if err != nil {
@@ -136,11 +139,12 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 	ch <- resp
 }
 
-func randSeq(n int) string {
-	var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+// randomSequence returns random sequence from the provided sequence
+func randomSequence(n int) string {
+	var seq = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	b := make([]rune, n)
 	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
+		b[i] = seq[rand.Intn(len(seq))]
 	}
 	return string(b)
 }

@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// GetArticlesList get a list of articles with pagination
 func (m *mysqlDatabaseRepo) GetArticlesList(r *http.Request) ([]*models.Article, error) {
 	var articles []*models.Article
 	rows := m.DB.Scopes(paginate(r, m.App)).Find(&articles)
@@ -17,6 +18,7 @@ func (m *mysqlDatabaseRepo) GetArticlesList(r *http.Request) ([]*models.Article,
 	return articles, nil
 }
 
+// GetArticleById get an article by a given article id
 func (m *mysqlDatabaseRepo) GetArticleById(r *http.Request) (models.ArticleWithContent, error) {
 	var article models.ArticleWithContent
 	params := httprouter.ParamsFromContext(r.Context())
@@ -29,6 +31,8 @@ func (m *mysqlDatabaseRepo) GetArticleById(r *http.Request) (models.ArticleWithC
 	row.Scan(&article)
 	return article, nil
 }
+
+// GetCommentsByArticleId get comments by article id with pagination
 func (m *mysqlDatabaseRepo) GetCommentsByArticleId(r *http.Request) ([]*models.Comment, error) {
 	var comments []*models.Comment
 	params := httprouter.ParamsFromContext(r.Context())
@@ -45,6 +49,7 @@ func (m *mysqlDatabaseRepo) GetCommentsByArticleId(r *http.Request) ([]*models.C
 	return comments, nil
 }
 
+// VerifyApiKeyExists verify if given api key exists
 func (m *mysqlDatabaseRepo) VerifyApiKeyExists(apiKey string) bool {
 	var count int64
 	m.DB.Model(&models.User{}).Where(&models.User{ApiKey: apiKey}).Count(&count)
@@ -54,6 +59,7 @@ func (m *mysqlDatabaseRepo) VerifyApiKeyExists(apiKey string) bool {
 	return true
 }
 
+// InsertComment saves comment for given article
 func (m *mysqlDatabaseRepo) InsertComment(comment models.Comment) error {
 	result := m.DB.Create(&comment)
 	if result.Error != nil {

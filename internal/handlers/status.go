@@ -3,11 +3,12 @@ package handlers
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
+	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
 
 // StatusHandler is a handler for app status
-func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request) {
+func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	currentStatus := models.AppStatus{
 		Status:      "Available",
 		Environment: repo.App.Environment,

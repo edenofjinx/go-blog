@@ -5,10 +5,12 @@ import (
 	"net/http"
 )
 
+// JsonResponse hold json response message
 type JsonResponse struct {
 	Message string `json:"message"`
 }
 
+// ResponseJson handles json responses
 func (repo *Repository) ResponseJson(w http.ResponseWriter, status int, data interface{}, wrap string) error {
 	wrapper := make(map[string]interface{})
 	wrapper[wrap] = data

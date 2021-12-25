@@ -13,6 +13,7 @@ type Article struct {
 	User    User   `gorm:"constraint:OnUpdate:CASCADE,OnDelete:SET NULL;" json:"-"`
 }
 
+// ArticleWithContent returns Article but with content in the json
 type ArticleWithContent struct {
 	Article
 	Content string `gorm:"type:text" json:"content"`

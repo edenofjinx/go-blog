@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// paginate pagination from url params
 func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		params := r.URL.Query()
@@ -22,6 +23,7 @@ func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm
 	}
 }
 
+// getPage gets page number from url params
 func getPage(params url.Values, config *config.AppConfig) int {
 	page := params.Get("page")
 	if page == "" {
@@ -37,6 +39,7 @@ func getPage(params url.Values, config *config.AppConfig) int {
 	return p
 }
 
+// getLimit gets limit from url params
 func getLimit(params url.Values, config *config.AppConfig) int {
 	limit := params.Get("limit")
 	if limit == "" {
@@ -55,6 +58,7 @@ func getLimit(params url.Values, config *config.AppConfig) int {
 	return l
 }
 
+// getOrder gets order from url params
 func getOrder(params url.Values) string {
 	order := params.Get("order")
 	o := strings.ToUpper(order)
