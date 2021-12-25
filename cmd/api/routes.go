@@ -31,9 +31,9 @@ func unprotectedRoutes(r *httprouter.Router) {
 }
 
 func protectedRoutes(r *httprouter.Router, s *alice.Chain) {
-	r.GET("/v1/articles/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetArticlesList)))
+	r.GET("/v1/articles", wrap(s.ThenFunc(handlers.Repo.GetArticlesList)))
 	r.GET("/v1/article/:id", wrap(s.ThenFunc(handlers.Repo.GetArticleById)))
-	r.GET("/v1/article/:id/comments/:page/:limit", wrap(s.ThenFunc(handlers.Repo.GetCommentsByArticleId)))
+	r.GET("/v1/article/:id/comments", wrap(s.ThenFunc(handlers.Repo.GetCommentsByArticleId)))
 
 	r.POST("/v1/comment/save", wrap(s.ThenFunc(handlers.Repo.SaveComment)))
 }

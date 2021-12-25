@@ -1,10 +1,8 @@
 package dbrepo
 
 import (
-	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"github.com/julienschmidt/httprouter"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
@@ -62,28 +60,4 @@ func (m *mysqlDatabaseRepo) InsertComment(comment models.Comment) error {
 		return result.Error
 	}
 	return nil
-}
-
-func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		params := httprouter.ParamsFromContext(r.Context())
-		page, err := strconv.Atoi(params.ByName("page"))
-		if err != nil {
-			config.ErrorLog.Println(err)
-		}
-		if page == 0 {
-			page = 1
-		}
-
-		limit, err := strconv.Atoi(params.ByName("limit"))
-		switch {
-		case limit > 100:
-			limit = 100
-		case limit <= 0:
-			limit = 10
-		}
-
-		offset := (page - 1) * limit
-		return db.Offset(offset).Limit(limit)
-	}
 }

@@ -1,3 +1,4 @@
 /.idea
+/static/images
 .env
 .env.development.local
