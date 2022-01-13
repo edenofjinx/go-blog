@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 // DB hold the database connection pool
@@ -14,7 +13,7 @@ type DB struct {
 
 var dbConn = &DB{}
 
-// ConnectSQL creates database pool for Postgres
+// ConnectSQL creates database pool
 func ConnectSQL(dsn string, app config.AppConfig) (*DB, error) {
 	d, err := NewDatabase(dsn, app)
 	if err != nil {
@@ -29,7 +28,7 @@ func NewDatabase(dsn string, app config.AppConfig) (*gorm.DB, error) {
 	db, err := gorm.Open(
 		mysql.Open(dsn),
 		&gorm.Config{
-			Logger: logger.Default.LogMode(logger.Info),
+			//Logger: logger.Default.LogMode(logger.Info),
 		},
 	)
 	if err != nil {
