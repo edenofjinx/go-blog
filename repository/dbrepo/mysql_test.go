@@ -58,9 +58,19 @@ var testComments = []models.Comment{
 		UserID:    1,
 	},
 	{
+		ArticleID: 1,
+		Content:   "test comment 1-2",
+		UserID:    2,
+	},
+	{
 		ArticleID: 2,
 		Content:   "Test comment 2",
 		UserID:    2,
+	},
+	{
+		ArticleID: 2,
+		Content:   "Test comment 2-1",
+		UserID:    1,
 	},
 }
 
@@ -154,6 +164,99 @@ var testsForGetArticleById = []struct {
 		requestID:       "",
 		expectedTitle:   "",
 		expectedContent: "",
+	},
+}
+
+var testsForGetCommentsByArticleId = []struct {
+	name            string
+	articleId       string
+	pagination      testPagination
+	expectedLength  int
+	expectedContent string
+	expectedUserID  int
+}{
+	{
+		name:            "default comments list",
+		articleId:       "1",
+		pagination:      testPagination{limit: "", page: "", order: ""},
+		expectedLength:  2,
+		expectedContent: testComments[0].Content,
+		expectedUserID:  testComments[0].UserID,
+	},
+	{
+		name:            "comments list with limit of 1",
+		articleId:       "1",
+		pagination:      testPagination{limit: "1", page: "", order: ""},
+		expectedLength:  1,
+		expectedContent: testComments[0].Content,
+		expectedUserID:  testComments[0].UserID,
+	},
+	{
+		name:            "comments list with page of 5",
+		articleId:       "1",
+		pagination:      testPagination{limit: "", page: "5", order: ""},
+		expectedLength:  0,
+		expectedContent: "",
+	},
+	{
+		name:            "comments list with order of DESC",
+		articleId:       "2",
+		pagination:      testPagination{limit: "", page: "", order: "DESC"},
+		expectedLength:  2,
+		expectedContent: testComments[3].Content,
+		expectedUserID:  testComments[3].UserID,
+	},
+	{
+		name:            "comments list with mixed pagination",
+		articleId:       "2",
+		pagination:      testPagination{limit: "1", page: "2", order: "DESC"},
+		expectedLength:  1,
+		expectedContent: testComments[2].Content,
+		expectedUserID:  testComments[2].UserID,
+	},
+	{
+		name:            "comments list with incorrect pagination variables",
+		articleId:       "2",
+		pagination:      testPagination{limit: "test", page: "-50", order: "TestOrder"},
+		expectedLength:  2,
+		expectedContent: testComments[2].Content,
+		expectedUserID:  testComments[2].UserID,
+	},
+	{
+		name:            "comments list with non existing article id",
+		articleId:       "99",
+		pagination:      testPagination{limit: "", page: "", order: ""},
+		expectedLength:  0,
+		expectedContent: "",
+	},
+	{
+		name:            "comments list with incorrect article id",
+		articleId:       "",
+		pagination:      testPagination{limit: "", page: "", order: ""},
+		expectedLength:  0,
+		expectedContent: "",
+	},
+}
+
+var testsForVerifyApiKeyExists = []struct {
+	name             string
+	testApiKey       string
+	expectedResponse bool
+}{
+	{
+		name:             "verify with existing api key",
+		testApiKey:       testUsers[0].ApiKey,
+		expectedResponse: true,
+	},
+	{
+		name:             "verify with non existing api key",
+		testApiKey:       "asdf-4444-test-123",
+		expectedResponse: false,
+	},
+	{
+		name:             "verify with empty api key",
+		testApiKey:       "",
+		expectedResponse: false,
 	},
 }
 
@@ -271,6 +374,51 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 			a.Content,
 			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
 		)
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestGetCommentsByArticleId() {
+	for _, t := range testsForGetCommentsByArticleId {
+		req, err := generateNewGETRequest("/v1/article/:id/comments", t.pagination)
+		suite.Nil(err, "failed to create http request")
+		ctx := req.Context()
+		ctx = context.WithValue(ctx, httprouter.ParamsKey, httprouter.Params{
+			{"id", t.articleId},
+		})
+		req = req.WithContext(ctx)
+		list, err := suite.testRepo.GetCommentsByArticleId(req)
+		if err != nil {
+			if t.articleId == "" {
+				continue
+			}
+			suite.Fail(fmt.Sprintf("failed to load articles in test name %s", t.name))
+		}
+		l := len(list)
+		suite.Equal(
+			t.expectedLength,
+			l,
+			fmt.Sprintf("expected length %d is not equal to actual length %d in test name %s", t.expectedLength, l, t.name),
+		)
+		if t.expectedLength == 0 && l == t.expectedLength {
+			continue
+		}
+		suite.Equal(
+			t.expectedUserID,
+			list[0].UserID,
+			fmt.Sprintf("expected and actual user id are not equal in test name %s", t.name),
+		)
+		suite.Equal(
+			t.expectedContent,
+			list[0].Content,
+			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
+		)
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestVerifyApiKeyExists() {
+	for _, t := range testsForVerifyApiKeyExists {
+		v := suite.testRepo.VerifyApiKeyExists(t.testApiKey)
+		suite.Equal(t.expectedResponse, v, fmt.Sprintf("expected and actual responses are not equal in test name %s", t.name))
 	}
 }
 
