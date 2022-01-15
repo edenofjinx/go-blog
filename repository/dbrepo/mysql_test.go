@@ -103,6 +103,13 @@ var testsForGetArticlesList = []struct {
 		expectedContent: testArticles[0].Content,
 	},
 	{
+		name:            "articles list with limit of 1000",
+		pagination:      testPagination{limit: "1000", page: "", order: ""},
+		expectedLength:  2,
+		expectedTitle:   testArticles[0].Title,
+		expectedContent: testArticles[0].Content,
+	},
+	{
 		name:            "articles list with page of 5",
 		pagination:      testPagination{limit: "", page: "5", order: ""},
 		expectedLength:  0,
