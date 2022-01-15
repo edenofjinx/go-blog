@@ -4,7 +4,9 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
+	"context"
 	"fmt"
+	"github.com/julienschmidt/httprouter"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"net/http"
@@ -119,6 +121,42 @@ var testsForGetArticlesList = []struct {
 	},
 }
 
+var testsForGetArticleById = []struct {
+	name            string
+	requestID       string
+	expectedTitle   string
+	expectedContent string
+	testNoID        bool
+}{
+	{
+		name:            "get article with id 1",
+		requestID:       "1",
+		expectedTitle:   testArticles[0].Title,
+		expectedContent: testArticles[0].Content,
+		testNoID:        false,
+	},
+	{
+		name:            "get article with id 2",
+		requestID:       "2",
+		expectedTitle:   testArticles[1].Title,
+		expectedContent: testArticles[1].Content,
+		testNoID:        false,
+	},
+	{
+		name:            "get article with non existing id",
+		requestID:       "99",
+		expectedTitle:   "",
+		expectedContent: "",
+		testNoID:        false,
+	},
+	{
+		name:            "get article with no id",
+		requestID:       "",
+		expectedTitle:   "",
+		expectedContent: "",
+	},
+}
+
 type databaseRequestTestSuite struct {
 	suite.Suite
 	testRepo mysqlDatabaseRepo
@@ -197,6 +235,40 @@ func (suite *databaseRequestTestSuite) TestGetArticlesList() {
 		suite.Equal(
 			t.expectedContent,
 			list[0].Content,
+			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
+		)
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestGetArticleById() {
+	pagination := testPagination{
+		limit: "",
+		page:  "",
+		order: "",
+	}
+	for _, t := range testsForGetArticleById {
+		req, err := generateNewGETRequest("/v1/article/:id", pagination)
+		suite.Nil(err, "failed to create http request")
+		ctx := req.Context()
+		ctx = context.WithValue(ctx, httprouter.ParamsKey, httprouter.Params{
+			{"id", t.requestID},
+		})
+		req = req.WithContext(ctx)
+		a, err := suite.testRepo.GetArticleById(req)
+		if err != nil {
+			if t.requestID == "" {
+				continue
+			}
+			suite.Fail(fmt.Sprintf("error when loading article by id %s, in test name %s", t.requestID, t.name))
+		}
+		suite.Equal(
+			t.expectedTitle,
+			a.Title,
+			fmt.Sprintf("expected and actual title are not equal in test name %s", t.name),
+		)
+		suite.Equal(
+			t.expectedContent,
+			a.Content,
 			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
 		)
 	}
