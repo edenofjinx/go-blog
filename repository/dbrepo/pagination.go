@@ -19,7 +19,7 @@ func paginate(r *http.Request, config *config.AppConfig) func(db *gorm.DB) *gorm
 		order := getOrder(params)
 
 		offset := (page - 1) * limit
-		return db.Offset(offset).Limit(limit).Order(fmt.Sprintf("created_at %s", order))
+		return db.Offset(offset).Limit(limit).Order(fmt.Sprintf("id %s", order))
 	}
 }
 

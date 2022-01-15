@@ -17,7 +17,7 @@ var dbConn = &DB{}
 func ConnectSQL(dsn string, app config.AppConfig) (*DB, error) {
 	d, err := NewDatabase(dsn, app)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	dbConn.SQL = d
 	return dbConn, nil
