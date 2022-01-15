@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 var testDsn = "root:root@tcp(localhost:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local"
@@ -260,6 +261,55 @@ var testsForVerifyApiKeyExists = []struct {
 	},
 }
 
+var testsForInsertComment = []struct {
+	name          string
+	articleID     int
+	userID        int
+	content       string
+	expectedError bool
+}{
+	{
+		name:          "insert comment with correct data",
+		articleID:     1,
+		userID:        1,
+		content:       "some new content 1",
+		expectedError: false,
+	},
+	{
+		name:          "insert comment with incorrect article id",
+		articleID:     99,
+		userID:        1,
+		content:       "some new content 99",
+		expectedError: true,
+	},
+	{
+		name:          "insert comment with incorrect user id",
+		articleID:     1,
+		userID:        99,
+		content:       "some new content user 99",
+		expectedError: true,
+	},
+	{
+		name:          "insert comment with empty content",
+		articleID:     2,
+		userID:        2,
+		content:       "",
+		expectedError: false,
+	},
+	{
+		name:          "insert comment with empty article id",
+		userID:        2,
+		content:       "empty article id",
+		expectedError: true,
+	},
+	{
+		name:          "insert comment with empty user id",
+		articleID:     1,
+		content:       "empty user id",
+		expectedError: true,
+	},
+}
+
 type databaseRequestTestSuite struct {
 	suite.Suite
 	testRepo mysqlDatabaseRepo
@@ -419,6 +469,24 @@ func (suite *databaseRequestTestSuite) TestVerifyApiKeyExists() {
 	for _, t := range testsForVerifyApiKeyExists {
 		v := suite.testRepo.VerifyApiKeyExists(t.testApiKey)
 		suite.Equal(t.expectedResponse, v, fmt.Sprintf("expected and actual responses are not equal in test name %s", t.name))
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestInsertComment() {
+	for _, t := range testsForInsertComment {
+		var tc models.Comment
+		tc.ArticleID = t.articleID
+		tc.UserID = t.userID
+		tc.Content = t.content
+		tc.CreatedAt = time.Now()
+		tc.UpdatedAt = time.Now()
+		err := suite.testRepo.InsertComment(tc)
+		if err != nil {
+			if t.expectedError {
+				continue
+			}
+			suite.Fail(fmt.Sprintf("error not expected in test name %s", t.name))
+		}
 	}
 }
 
