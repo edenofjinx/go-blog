@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+var seq = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+
 // imageUploadResult hold image upload data
 type imageUploadResult struct {
 	Url   string
@@ -141,7 +143,6 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 
 // randomSequence returns random sequence from the provided sequence
 func randomSequence(n int) string {
-	var seq = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 	b := make([]rune, n)
 	for i := range b {
 		b[i] = seq[rand.Intn(len(seq))]

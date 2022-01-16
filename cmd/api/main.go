@@ -11,6 +11,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -84,21 +86,23 @@ func setEnvironment(cfg *serverConfig) {
 		"Application env (development|production), default is set to development",
 	)
 	flag.Parse()
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../../")
 	switch cfg.env {
 	case "production":
-		err := godotenv.Load(".env")
+		err := godotenv.Load(root + "/.env")
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = true
 	case "development":
-		err := godotenv.Load(".env." + cfg.env + ".local")
+		err := godotenv.Load(root + "/.env." + cfg.env + ".local")
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = false
 	default:
-		err := godotenv.Load(".env." + cfg.env + ".local")
+		err := godotenv.Load(root + "/.env." + cfg.env + ".local")
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}

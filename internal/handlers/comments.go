@@ -11,18 +11,12 @@ import (
 func (repo *Repository) GetCommentsByArticleId(w http.ResponseWriter, r *http.Request) {
 	comments, err := repo.DB.GetCommentsByArticleId(r)
 	if err != nil {
-		repo.App.ErrorLog.Println(err)
+		repo.ErrorHandler(w, err)
 		return
 	}
-	js, err := json.MarshalIndent(comments, "", "\t")
+	err = repo.ResponseJson(w, http.StatusAccepted, comments, "data")
 	if err != nil {
-		repo.App.ErrorLog.Println(err)
-	}
-	w.Header().Set(AppContentType, AppJson)
-	w.WriteHeader(http.StatusAccepted)
-	_, err = w.Write(js)
-	if err != nil {
-		repo.App.ErrorLog.Println(err)
+		repo.ErrorHandler(w, err)
 		return
 	}
 }
