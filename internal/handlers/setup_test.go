@@ -92,6 +92,7 @@ func (suite *handlersTestSuite) SetupSuite() {
 		suite.Fail("could not connect to the test sql")
 	}
 	handlerRepo := NewRepo(&a, db)
+	NewHandlers(handlerRepo)
 	suite.testHandlerRepo = handlerRepo
 	suite.testSQL = db
 	err = suite.testSQL.SQL.AutoMigrate(

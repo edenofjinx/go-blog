@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
-	"log"
 	"net/http"
 	"net/http/httptest"
 )
@@ -20,7 +19,6 @@ func (suite *handlersTestSuite) TestStatusHandler() {
 	status := rr.Code
 	suite.Equal(http.StatusAccepted, status, fmt.Sprintf("status code should be %d but got %d", http.StatusAccepted, status))
 	err = json.Unmarshal(rr.Body.Bytes(), &m)
-	log.Println(m["success"].Status)
 	suite.Nil(err, "could not unmarshal the response body into a struct")
 	suite.Equal("test", m["success"].Environment, "expected environment is not equal to actual")
 	suite.Equal("test", m["success"].Version, "expected version is not equal to actual")
