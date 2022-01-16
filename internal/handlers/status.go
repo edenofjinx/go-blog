@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
-	"encoding/json"
 	"github.com/julienschmidt/httprouter"
 	"net/http"
 )
@@ -14,16 +13,9 @@ func (repo *Repository) StatusHandler(w http.ResponseWriter, r *http.Request, pa
 		Environment: repo.App.Environment,
 		Version:     repo.App.AppVersion,
 	}
-
-	js, err := json.MarshalIndent(currentStatus, "", "\t")
+	err := repo.ResponseJson(w, http.StatusAccepted, currentStatus, "success")
 	if err != nil {
-		repo.App.ErrorLog.Println(err)
-	}
-	w.Header().Set(AppContentType, AppJson)
-	w.WriteHeader(http.StatusAccepted)
-	_, err = w.Write(js)
-	if err != nil {
-		repo.App.ErrorLog.Println(err)
+		repo.ErrorHandler(w, err, http.StatusInternalServerError)
 		return
 	}
 }
