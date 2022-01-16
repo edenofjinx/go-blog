@@ -6,6 +6,7 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"github.com/stretchr/testify/suite"
 	"log"
+	"net/http"
 	"os"
 	"testing"
 )
@@ -70,6 +71,12 @@ var testComments = []models.Comment{
 	},
 }
 
+type testPagination struct {
+	limit string
+	page  string
+	order string
+}
+
 type handlersTestSuite struct {
 	suite.Suite
 	testHandlerRepo *Repository
@@ -120,4 +127,27 @@ func (suite *handlersTestSuite) TearDownSuite() {
 
 func TestMysqlTestSuite(t *testing.T) {
 	suite.Run(t, new(handlersTestSuite))
+}
+
+func generateNewGETRequest(url string, pagination testPagination) (*http.Request, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if pagination.limit != "" {
+		q := req.URL.Query()
+		q.Add("limit", pagination.limit)
+		req.URL.RawQuery = q.Encode()
+	}
+	if pagination.page != "" {
+		q := req.URL.Query()
+		q.Add("page", pagination.page)
+		req.URL.RawQuery = q.Encode()
+	}
+	if pagination.order != "" {
+		q := req.URL.Query()
+		q.Add("order", pagination.order)
+		req.URL.RawQuery = q.Encode()
+	}
+	return req, nil
 }

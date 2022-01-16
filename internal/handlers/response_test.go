@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 )
@@ -12,7 +11,6 @@ var testsForResponseJson = []struct {
 	statusCode   int
 	wrap         string
 	data         interface{}
-	expectedWrap string
 	expectedCode int
 }{
 	{
@@ -20,7 +18,6 @@ var testsForResponseJson = []struct {
 		statusCode:   http.StatusOK,
 		wrap:         "success",
 		data:         "",
-		expectedWrap: "success",
 		expectedCode: http.StatusOK,
 	},
 	{
@@ -28,7 +25,6 @@ var testsForResponseJson = []struct {
 		statusCode:   http.StatusOK,
 		wrap:         "success",
 		data:         "test data",
-		expectedWrap: "success",
 		expectedCode: http.StatusOK,
 	},
 	{
@@ -36,7 +32,6 @@ var testsForResponseJson = []struct {
 		statusCode:   http.StatusInternalServerError,
 		wrap:         "success",
 		data:         make(chan int),
-		expectedWrap: "error",
 		expectedCode: http.StatusInternalServerError,
 	},
 }
@@ -49,7 +44,6 @@ func (suite *handlersTestSuite) TestResponseJson() {
 			suite.testHandlerRepo.ErrorHandler(rr, err, t.statusCode)
 		}
 		status := rr.Code
-		log.Println(status)
 		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d", t.expectedCode, status))
 	}
 }
