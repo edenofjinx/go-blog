@@ -38,10 +38,19 @@ func seedUserGroups(db *driver.DB) error {
 			Name: "Registered",
 		},
 	}
-	if err := db.SQL.AutoMigrate(&models.UserGroup{}); err == nil && db.SQL.Migrator().HasTable(&models.UserGroup{}) {
-		if err := db.SQL.First(&models.UserGroup{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			for _, v := range userGroups {
-				db.SQL.Create(&v)
+	err := db.SQL.AutoMigrate(&models.UserGroup{})
+	if err != nil {
+		return err
+	}
+	if db.SQL.Migrator().HasTable(&models.UserGroup{}) {
+		err := db.SQL.First(&models.UserGroup{}).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				for _, v := range userGroups {
+					db.SQL.Create(&v)
+				}
+			} else {
+				return err
 			}
 		}
 	}
@@ -62,10 +71,19 @@ func seedUsers(db *driver.DB) error {
 			GroupID: 2,
 		},
 	}
-	if err := db.SQL.AutoMigrate(&models.User{}); err == nil && db.SQL.Migrator().HasTable(&models.User{}) {
-		if err := db.SQL.First(&models.User{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			for _, v := range users {
-				db.SQL.Create(&v)
+	err := db.SQL.AutoMigrate(&models.User{})
+	if err != nil {
+		return err
+	}
+	if db.SQL.Migrator().HasTable(&models.User{}) {
+		err := db.SQL.First(&models.User{}).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				for _, v := range users {
+					db.SQL.Create(&v)
+				}
+			} else {
+				return err
 			}
 		}
 	}
@@ -86,10 +104,19 @@ func seedArticles(db *driver.DB) error {
 			UserID:  2,
 		},
 	}
-	if err := db.SQL.AutoMigrate(&models.Article{}); err == nil && db.SQL.Migrator().HasTable(&models.Article{}) {
-		if err := db.SQL.First(&models.Article{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			for _, v := range articles {
-				db.SQL.Create(&v)
+	err := db.SQL.AutoMigrate(&models.Article{})
+	if err != nil {
+		return err
+	}
+	if db.SQL.Migrator().HasTable(&models.Article{}) {
+		err := db.SQL.First(&models.Article{}).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				for _, v := range articles {
+					db.SQL.Create(&v)
+				}
+			} else {
+				return err
 			}
 		}
 	}
@@ -110,10 +137,19 @@ func seedComments(db *driver.DB) error {
 			UserID:    2,
 		},
 	}
-	if err := db.SQL.AutoMigrate(&models.Comment{}); err == nil && db.SQL.Migrator().HasTable(&models.Comment{}) {
-		if err := db.SQL.First(&models.Comment{}).Error; errors.Is(err, gorm.ErrRecordNotFound) {
-			for _, v := range comments {
-				db.SQL.Create(&v)
+	err := db.SQL.AutoMigrate(&models.Comment{})
+	if err != nil {
+		return err
+	}
+	if db.SQL.Migrator().HasTable(&models.Comment{}) {
+		err := db.SQL.First(&models.Comment{}).Error
+		if err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				for _, v := range comments {
+					db.SQL.Create(&v)
+				}
+			} else {
+				return err
 			}
 		}
 	}
