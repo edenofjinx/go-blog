@@ -3,6 +3,7 @@ package handlers
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"time"
 )
@@ -29,9 +30,9 @@ func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 		repo.ErrorHandler(w, err)
 		return
 	}
-	content, err := repo.parseImageTags(payload.Content)
-	if err != nil {
-		repo.ErrorHandler(w, err)
+	content, er := repo.parseImageTags(payload.Content)
+	if er != nil {
+		repo.ErrorHandler(w, er)
 		return
 	}
 	var comment models.Comment
@@ -42,7 +43,7 @@ func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 	comment.UpdatedAt = time.Now()
 	err = repo.DB.InsertComment(comment)
 	if err != nil {
-		repo.ErrorHandler(w, err)
+		repo.ErrorHandler(w, errors.New("could not save the comment"))
 		return
 	}
 	message := JsonResponse{

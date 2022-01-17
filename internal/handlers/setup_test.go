@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -92,7 +94,7 @@ func (suite *handlersTestSuite) SetupSuite() {
 		InProduction: false,
 		AppVersion:   "test",
 		Environment:  "test",
-		StaticImages: "static/test/",
+		StaticImages: "static/test/images/",
 	}
 	db, err := driver.ConnectSQL(testDsn, a)
 	if err != nil {
@@ -123,6 +125,10 @@ func (suite *handlersTestSuite) TearDownSuite() {
 		&models.Comment{},
 	)
 	suite.Nil(err, "could not drop test tables")
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../../")
+	err = os.RemoveAll(root + "/" + suite.testHandlerRepo.App.StaticImages)
+	suite.Nil(err, "could not remove test images from folder")
 }
 
 func TestMysqlTestSuite(t *testing.T) {

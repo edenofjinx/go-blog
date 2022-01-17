@@ -13,6 +13,8 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -70,6 +72,7 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 	if idx < 0 {
 		resp.Error = errors.New("invalid image")
 		ch <- resp
+		return
 	}
 	ImageType := data[11:idx]
 	rand.Seed(time.Now().UnixNano())
@@ -79,24 +82,39 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 	if err != nil {
 		resp.Error = errors.New("cannot decode base64 image")
 		ch <- resp
+		return
 	}
 	r := bytes.NewReader(unbased)
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../../")
+	_, err = os.Stat(root + "/" + repo.App.StaticImages)
+	if os.IsNotExist(err) {
+		errDir := os.MkdirAll(root+"/"+repo.App.StaticImages, 0755)
+		if errDir != nil {
+			resp.Error = errors.New("could not create directory")
+			ch <- resp
+			return
+		}
+	}
 	switch ImageType {
 	case "png":
 		im, err := png.Decode(r)
 		if err != nil {
 			resp.Error = errors.New("cannot decode png")
 			ch <- resp
+			return
 		}
-		f, err := os.OpenFile(fmt.Sprintf("%s.png", imgName), os.O_WRONLY|os.O_CREATE, 0777)
+		f, err := os.OpenFile(fmt.Sprintf("%s/%s.png", root, imgName), os.O_WRONLY|os.O_CREATE, 0777)
 		if err != nil {
 			resp.Error = errors.New("cannot open file")
 			ch <- resp
+			return
 		}
 		err = png.Encode(f, im)
 		if err != nil {
 			resp.Error = errors.New("cannot encode png file")
 			ch <- resp
+			return
 		}
 		url = f.Name()
 
@@ -105,16 +123,19 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 		if err != nil {
 			resp.Error = errors.New("cannot decode jpeg")
 			ch <- resp
+			return
 		}
-		f, err := os.OpenFile(fmt.Sprintf("%s.jpeg", imgName), os.O_WRONLY|os.O_CREATE, 0777)
+		f, err := os.OpenFile(fmt.Sprintf("%s/%s.jpeg", root, imgName), os.O_WRONLY|os.O_CREATE, 0777)
 		if err != nil {
 			resp.Error = errors.New("cannot decode jpeg file")
 			ch <- resp
+			return
 		}
 		err = jpeg.Encode(f, im, nil)
 		if err != nil {
 			resp.Error = errors.New("cannot encode jpeg file")
 			ch <- resp
+			return
 		}
 		url = f.Name()
 
@@ -123,16 +144,19 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 		if err != nil {
 			resp.Error = errors.New("cannot decode gif")
 			ch <- resp
+			return
 		}
-		f, err := os.OpenFile(fmt.Sprintf("%s.gif", imgName), os.O_WRONLY|os.O_CREATE, 0777)
+		f, err := os.OpenFile(fmt.Sprintf("%s/%s.gif", root, imgName), os.O_WRONLY|os.O_CREATE, 0777)
 		if err != nil {
 			resp.Error = errors.New("cannot open gif file")
 			ch <- resp
+			return
 		}
 		err = gif.Encode(f, im, nil)
 		if err != nil {
 			resp.Error = errors.New("cannot encode gif")
 			ch <- resp
+			return
 		}
 		url = f.Name()
 	}
