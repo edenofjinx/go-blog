@@ -5,6 +5,7 @@ import (
 	"context"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
+	"github.com/rs/cors"
 	"net/http"
 )
 
@@ -21,10 +22,22 @@ func routes() http.Handler {
 	router := httprouter.New()
 	secure := alice.New(verifyApiKey)
 	router.ServeFiles("/static/images/*filepath", http.Dir("static/images"))
-	unprotectedRoutes(router)
-
 	protectedRoutes(router, &secure)
-	return enableCORS(router)
+	unprotectedRoutes(router)
+	c := cors.New(cors.Options{
+		AllowedOrigins:         []string{"*"},
+		AllowOriginFunc:        nil,
+		AllowOriginRequestFunc: nil,
+		AllowedMethods:         nil,
+		AllowedHeaders:         []string{handlers.AppContentType, handlers.AppApiKey},
+		ExposedHeaders:         nil,
+		MaxAge:                 30,
+		AllowCredentials:       false,
+		OptionsPassthrough:     false,
+		OptionsSuccessStatus:   0,
+		Debug:                  false,
+	})
+	return c.Handler(router)
 }
 
 // unprotectedRoutes holds routes that are not protected by an api key

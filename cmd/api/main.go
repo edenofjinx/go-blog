@@ -101,6 +101,12 @@ func setEnvironment(cfg *serverConfig) {
 			errorLog.Fatal("Error loading .env file", err)
 		}
 		app.InProduction = false
+	case "test":
+		err := godotenv.Load(root + "/.env." + cfg.env)
+		if err != nil {
+			errorLog.Fatal("Error loading .env file", err)
+		}
+		app.InProduction = false
 	default:
 		err := godotenv.Load(root + "/.env." + cfg.env + ".local")
 		if err != nil {
