@@ -30,47 +30,31 @@ type serverConfig struct {
 	}
 }
 
+type envSet struct {
+	fs *flag.FlagSet
+}
+
+func (e *envSet) setFlag() {
+	e.fs = flag.NewFlagSet("envSet", flag.ContinueOnError)
+}
+
 var app config.AppConfig
 var infoLog *log.Logger
 var errorLog *log.Logger
+var cfg serverConfig
+var e envSet
 
 // main launches the application
 func main() {
-	var cfg serverConfig
-	setEnvironment(&cfg)
-	setDSN(&cfg)
-	setServerPort(&cfg)
-	app.AppVersion = version
-
-	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	app.InfoLog = infoLog
-
-	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	app.ErrorLog = errorLog
-	app.StaticImages = staticImages
-
-	db, err := driver.ConnectSQL(cfg.db.dsn, app)
+	setEnvCfg()
+	setAppCfg()
+	db, err := setupDatabase()
 	if err != nil {
-		errorLog.Fatal(err)
-		return
+		log.Println(err)
+		os.Exit(1)
 	}
-	err = database.SeedData(db)
-	if err != nil {
-		errorLog.Fatal(err)
-		return
-	}
-
-	repo := handlers.NewRepo(&app, db)
-	handlers.NewHandlers(repo)
-
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-	err = srv.ListenAndServe()
+	createHandlers(db)
+	err = createServer().ListenAndServe()
 	if err != nil {
 		errorLog.Fatal(err)
 		return
@@ -78,41 +62,31 @@ func main() {
 }
 
 // setEnvironment set the environment file and sets the env name in config
-func setEnvironment(cfg *serverConfig) {
-	flag.StringVar(
-		&cfg.env,
-		"env",
-		"development",
-		"Application env (development|production), default is set to development",
-	)
-	flag.Parse()
+func (e *envSet) setEnvironment(cfg *serverConfig) {
 	_, b, _, _ := runtime.Caller(0)
 	root := filepath.Join(filepath.Dir(b), "../../")
 	switch cfg.env {
 	case "production":
-		err := godotenv.Load(root + "/.env")
+		err := loadEnvFile(root+"/.env", true)
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
-		app.InProduction = true
 	case "development":
-		err := godotenv.Load(root + "/.env." + cfg.env + ".local")
+		err := loadEnvFile(root+"/.env."+cfg.env+".local", false)
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
-		app.InProduction = false
 	case "test":
-		err := godotenv.Load(root + "/.env." + cfg.env)
+		err := loadEnvFile(root+"/.env."+cfg.env, false)
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
-		app.InProduction = false
 	default:
-		err := godotenv.Load(root + "/.env." + cfg.env + ".local")
+		err := loadEnvFile(root+"/.env.development.local", false)
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
-		app.InProduction = false
+		cfg.env = "development"
 	}
 	app.Environment = cfg.env
 }
@@ -131,11 +105,68 @@ func setDSN(cfg *serverConfig) {
 }
 
 // setServerPort sets the server port in app config from the env file
-func setServerPort(cfg *serverConfig) {
+func setServerPort(cfg *serverConfig) error {
 	port, err := strconv.Atoi(os.Getenv("APP_PORT"))
 	if err != nil {
-		errorLog.Fatal(err)
-		return
+		return err
 	}
 	cfg.port = port
+	return nil
+}
+
+func loadEnvFile(path string, appInProd bool) error {
+	err := godotenv.Load(path)
+	if err != nil {
+		return err
+	}
+	app.InProduction = appInProd
+	return nil
+}
+
+func setEnvCfg() {
+	e.setFlag()
+	e.fs.StringVar(&cfg.env, "env", "test", "testing")
+	e.setEnvironment(&cfg)
+	setDSN(&cfg)
+	err := setServerPort(&cfg)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+}
+
+func setAppCfg() {
+	app.AppVersion = version
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+	app.StaticImages = staticImages
+}
+
+func setupDatabase() (*driver.DB, error) {
+	db, err := driver.ConnectSQL(cfg.db.dsn, app)
+	if err != nil {
+		return nil, err
+	}
+	err = database.SeedData(db)
+	if err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
+func createHandlers(db *driver.DB) {
+	repo := handlers.NewRepo(&app, db)
+	handlers.NewHandlers(repo)
+}
+
+func createServer() *http.Server {
+	return &http.Server{
+		Addr:         fmt.Sprintf(":%d", cfg.port),
+		Handler:      routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
+		WriteTimeout: 30 * time.Second,
+	}
 }

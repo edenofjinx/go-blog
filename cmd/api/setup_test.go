@@ -1,11 +1,8 @@
 package main
 
 import (
-	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"github.com/stretchr/testify/suite"
-	"log"
-	"net/http"
 	"os"
 	"testing"
 )
@@ -75,17 +72,7 @@ type TestMainPackage struct {
 }
 
 func (suite *TestMainPackage) SetupSuite() {
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-	a := config.AppConfig{
-		InfoLog:      infoLog,
-		ErrorLog:     errorLog,
-		InProduction: false,
-		AppVersion:   "test",
-		Environment:  "test",
-		StaticImages: "static/test/images/",
-	}
-	log.Println(a)
+
 }
 
 func (suite *TestMainPackage) TearDownSuite() {
@@ -98,33 +85,4 @@ func TestMain(m *testing.M) {
 
 func TestMainSuite(t *testing.T) {
 	suite.Run(t, new(TestMainPackage))
-}
-
-type testPagination struct {
-	limit string
-	page  string
-	order string
-}
-
-func generateNewGETRequest(url string, pagination testPagination) (*http.Request, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	if pagination.limit != "" {
-		q := req.URL.Query()
-		q.Add("limit", pagination.limit)
-		req.URL.RawQuery = q.Encode()
-	}
-	if pagination.page != "" {
-		q := req.URL.Query()
-		q.Add("page", pagination.page)
-		req.URL.RawQuery = q.Encode()
-	}
-	if pagination.order != "" {
-		q := req.URL.Query()
-		q.Add("order", pagination.order)
-		req.URL.RawQuery = q.Encode()
-	}
-	return req, nil
 }
