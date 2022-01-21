@@ -4,12 +4,14 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/config"
 	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
+	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 )
-
-var testDsn = "root:root@tcp(localhost:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local"
 
 type seedTestSuite struct {
 	suite.Suite
@@ -27,7 +29,19 @@ func (suite *seedTestSuite) SetupSuite() {
 		Environment:  "test",
 		StaticImages: "static/test/images/",
 	}
-	d, err := driver.ConnectSQL(testDsn, a)
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../../")
+	err := godotenv.Load(root + "/.env.test")
+	suite.Nil(err, "should not throw an error when loading .env file")
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	d, err := driver.ConnectSQL(dsn, a)
 	if err != nil {
 		suite.Fail("could not connect to the test sql")
 	}
