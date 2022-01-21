@@ -28,6 +28,7 @@ func (suite *TestMainPackage) TestSetServerPort() {
 	os.Setenv("APP_PORT", "test")
 	err = setServerPort(&cfg)
 	suite.Error(err, "should have error")
+	os.Setenv("APP_PORT", "0")
 }
 
 func (suite *TestMainPackage) TestSetDSN() {

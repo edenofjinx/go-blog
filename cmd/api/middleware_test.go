@@ -59,9 +59,6 @@ var testsToVerifyApiKey = []struct {
 }
 
 func (suite *TestMainPackage) TestVerifyApiKey() {
-	e.setFlag()
-	err := e.fs.Set("env", "test")
-	suite.Nil(err, "env flag should not throw an error")
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	a := config.AppConfig{
@@ -72,6 +69,9 @@ func (suite *TestMainPackage) TestVerifyApiKey() {
 		Environment:  "test",
 		StaticImages: "static/test/images/",
 	}
+	e.setFlag()
+	err := e.fs.Set("env", "test")
+	suite.Nil(err, "env flag should not throw an error")
 	e.setEnvironment(&cfg)
 	setDSN(&cfg)
 	err = setServerPort(&cfg)

@@ -2,34 +2,21 @@ package driver
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/config"
+	"fmt"
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"testing"
 )
 
 type driverTestSuite struct {
 	suite.Suite
 	a config.AppConfig
-}
-
-var testsForDatabaseConnection = []struct {
-	name          string
-	dsn           string
-	expectedError bool
-}{
-	{
-		name:          "valid connection",
-		dsn:           "root:root@tcp(localhost:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local",
-		expectedError: false,
-	},
-	{
-		name:          "invalid connection",
-		dsn:           "fail:test@tcp(localhost:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local",
-		expectedError: true,
-	},
 }
 
 func (suite *driverTestSuite) SetupSuite() {
@@ -51,25 +38,57 @@ func TestMysqlTestSuite(t *testing.T) {
 }
 
 func (suite *driverTestSuite) TestConnectSQL() {
-	for _, t := range testsForDatabaseConnection {
-		d, err := ConnectSQL(t.dsn, suite.a)
-		if err != nil {
-			if t.expectedError == false {
-				suite.Fail("did not expect a database connection error")
-			}
-		}
-		assert.ObjectsAreEqualValues(gorm.DB{}, d)
-	}
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../")
+	err := godotenv.Load(root + "/.env.test")
+	suite.Nil(err, "should not throw an error when loading .env file")
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	d, err := ConnectSQL(dsn, suite.a)
+	suite.Nil(err, "should not throw an error with correct dsn settings in .env file")
+	assert.ObjectsAreEqualValues(gorm.DB{}, d)
+	incorrectDsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		"testingIncorrectDsn",
+		"withDummyData",
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	d, err = ConnectSQL(incorrectDsn, suite.a)
+	suite.Error(err, "should contain an error as dummy dsn data is provided")
 }
 
 func (suite *driverTestSuite) TestNewDatabase() {
-	for _, t := range testsForDatabaseConnection {
-		d, err := NewDatabase(t.dsn, suite.a)
-		if err != nil {
-			if t.expectedError == false {
-				suite.Fail("did not expect a database connection error")
-			}
-		}
-		assert.ObjectsAreEqualValues(gorm.DB{}, d)
-	}
+	_, b, _, _ := runtime.Caller(0)
+	root := filepath.Join(filepath.Dir(b), "../")
+	err := godotenv.Load(root + "/.env.test")
+	suite.Nil(err, "should not throw an error when loading .env file")
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	d, err := NewDatabase(dsn, suite.a)
+	suite.Nil(err, "should not throw an error with correct dsn settings in .env file")
+	assert.ObjectsAreEqualValues(gorm.DB{}, d)
+	incorrectDsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		"testingIncorrectDsn",
+		"withDummyData",
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	d, err = NewDatabase(incorrectDsn, suite.a)
+	suite.Error(err, "should contain an error as dummy dsn data is provided")
 }
