@@ -7,8 +7,6 @@ import (
 	"testing"
 )
 
-var testDsn = "root:root@tcp(localhost:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local"
-
 var testUserGroups = []models.UserGroup{
 	{
 		Name: "Test Admin",
@@ -72,6 +70,10 @@ type TestMainPackage struct {
 }
 
 func (suite *TestMainPackage) SetupSuite() {
+
+}
+
+func (suite *TestMainPackage) SetupTest() {
 
 }
 

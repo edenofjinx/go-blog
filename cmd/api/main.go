@@ -36,6 +36,19 @@ type envSet struct {
 
 func (e *envSet) setFlag() {
 	e.fs = flag.NewFlagSet("envSet", flag.ContinueOnError)
+	e.fs.StringVar(&cfg.env, "env", "production", "environment")
+}
+
+func (e *envSet) parseEnvFlag() {
+	args := os.Args[1:]
+	for _, farg := range args {
+		if e.fs.Name() == farg {
+			err := e.fs.Parse(os.Args[2:])
+			if err != nil {
+				log.Println("envSet flag err")
+			}
+		}
+	}
 }
 
 var app config.AppConfig
@@ -81,12 +94,6 @@ func (e *envSet) setEnvironment(cfg *serverConfig) {
 		if err != nil {
 			errorLog.Fatal("Error loading .env file", err)
 		}
-	default:
-		err := loadEnvFile(root+"/.env.development.local", false)
-		if err != nil {
-			errorLog.Fatal("Error loading .env file", err)
-		}
-		cfg.env = "development"
 	}
 	app.Environment = cfg.env
 }
@@ -125,7 +132,7 @@ func loadEnvFile(path string, appInProd bool) error {
 
 func setEnvCfg() {
 	e.setFlag()
-	e.fs.StringVar(&cfg.env, "env", "test", "testing")
+	e.parseEnvFlag()
 	e.setEnvironment(&cfg)
 	setDSN(&cfg)
 	err := setServerPort(&cfg)

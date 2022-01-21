@@ -59,6 +59,9 @@ var testsToVerifyApiKey = []struct {
 }
 
 func (suite *TestMainPackage) TestVerifyApiKey() {
+	e.setFlag()
+	err := e.fs.Set("env", "test")
+	suite.Nil(err, "env flag should not throw an error")
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	a := config.AppConfig{
@@ -69,7 +72,12 @@ func (suite *TestMainPackage) TestVerifyApiKey() {
 		Environment:  "test",
 		StaticImages: "static/test/images/",
 	}
-	db, err := driver.ConnectSQL(testDsn, a)
+	e.setEnvironment(&cfg)
+	setDSN(&cfg)
+	err = setServerPort(&cfg)
+	suite.Nil(err, "should not have error")
+	suite.Equal("test", cfg.env)
+	db, err := driver.ConnectSQL(cfg.db.dsn, a)
 	if err != nil {
 		suite.Fail("could not connect to the test sql")
 	}

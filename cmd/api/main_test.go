@@ -1,62 +1,82 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 )
 
 func (suite *TestMainPackage) TestSetServerPort() {
-	var e envSet
-	var testCfg serverConfig
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "test", "testing")
-	e.setEnvironment(&testCfg)
-	err := setServerPort(&testCfg)
+	err := e.fs.Set("env", "test")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	err = setServerPort(&cfg)
 	suite.Nil(err, "should not have error")
-	suite.Equal("test", testCfg.env)
-	suite.Equal(4000, testCfg.port, "incorrect port selected")
+
+	suite.Equal("test", cfg.env)
+	port, err := strconv.Atoi(os.Getenv("APP_PORT"))
+	suite.Nil(err, "incorrect port provided in .env file")
+	suite.Equal(port, cfg.port, "incorrect port selected")
 
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "development", "development")
-	e.setEnvironment(&testCfg)
+	err = e.fs.Set("env", "development")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
 	os.Setenv("APP_PORT", "test")
-	err = setServerPort(&testCfg)
+	err = setServerPort(&cfg)
 	suite.Error(err, "should have error")
 }
 
 func (suite *TestMainPackage) TestSetDSN() {
-	var e envSet
-	var testCfg serverConfig
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "test", "testing")
-	e.setEnvironment(&testCfg)
-	setDSN(&testCfg)
-	suite.Equal("test", testCfg.env)
-	suite.Equal("root:root@tcp(127.0.0.1:3306)/go_blog_test?charset=utf8&parseTime=True&loc=Local", testCfg.db.dsn, "incorrect dsn")
+	err := e.fs.Set("env", "test")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	setDSN(&cfg)
+	suite.Equal("test", cfg.env)
+	eDsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_URL"),
+		os.Getenv("DB_PORT"),
+		os.Getenv("DB_TABLE"),
+	)
+	suite.Equal(eDsn, cfg.db.dsn, "incorrect dsn")
 }
 
 func (suite *TestMainPackage) TestSetEnvironment() {
-	var e envSet
-	var testCfg serverConfig
 	e.setFlag()
-	e.setEnvironment(&testCfg)
-	suite.Equal("development", testCfg.env)
+	err := e.fs.Set("env", "development")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	suite.Equal("development", cfg.env)
+
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "test", "testing")
-	e.setEnvironment(&testCfg)
-	suite.Equal("test", testCfg.env)
+	err = e.fs.Set("env", "test")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	suite.Equal("test", cfg.env)
+
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "development", "development")
-	e.setEnvironment(&testCfg)
-	suite.Equal("development", testCfg.env)
+	err = e.fs.Set("env", "development")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	suite.Equal("development", cfg.env)
+
 	e.setFlag()
-	e.fs.StringVar(&testCfg.env, "env", "production", "production")
-	e.setEnvironment(&testCfg)
-	suite.Equal("production", testCfg.env)
+	err = e.fs.Set("env", "production")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	suite.Equal("production", cfg.env)
+
 	e.setFlag()
-	e.setEnvironment(&testCfg)
-	suite.Equal("production", testCfg.env)
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
+	suite.Equal("production", cfg.env)
 }
 
 func (suite *TestMainPackage) TestLoadEnvFile() {
@@ -93,4 +113,16 @@ func (suite *TestMainPackage) TestCreateServer() {
 	setEnvCfg()
 	setAppCfg()
 	_ = createServer()
+}
+
+func (suite *TestMainPackage) TestParseEnvFlag() {
+	e.setFlag()
+	os.Args = append(os.Args, "envSet")
+	os.Args[2] = "-env=test"
+	e.parseEnvFlag()
+
+	e.setFlag()
+	os.Args = append(os.Args, "envSet")
+	os.Args[2] = "-test=new"
+	e.parseEnvFlag()
 }
