@@ -4,12 +4,12 @@ Go-Blog was created as a task to learn about go.
 
 # Environment setup
 
-* Production
-  - .env
+* Production 
+    * .env
 * Development
-  - .env.development.local
+    * .env.development.local
 * Test
-  - .env.test
+    * .env.test
 
 .env.example
 ```shell
@@ -38,7 +38,7 @@ go run !(*_test).go envSet -env=production
 **envSet** is a flagSet which holds additional flags that can be set
 #### envSet flags
 * env
-  * production|development|test - by default, the env is set to production
+    * production|development|test - by default, the env is set to production
 
 # Running tests
 
@@ -77,13 +77,13 @@ A valid request needs to provide **api_key** in the header for authorization.
 # TODO
 ### Endpoints
 * comments
-  - [ ] \(optional) edit comment
-  - [ ] \(optional) remove comment
+    - [ ] \(optional) edit comment
+    - [ ] \(optional) remove comment
 * articles
-  - [ ] \(optional) save article
-  - [ ] \(optional) edit article
-  - [ ] \(optional)remove article
-- [ ] \(optional) User registration
+    - [ ] \(optional) save article
+    - [ ] \(optional) edit article
+    - [ ] \(optional)remove article
+- [x] \(optional) User registration
 - [ ] \(optional) User login
 
 ### Backend functionality
