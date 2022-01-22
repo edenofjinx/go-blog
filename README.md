@@ -83,7 +83,7 @@ A valid request needs to provide **api_key** in the header for authorization.
     - [ ] \(optional) save article
     - [ ] \(optional) edit article
     - [ ] \(optional)remove article
-- [x] \(optional) User registration
+- [] \(optional) User registration
 - [ ] \(optional) User login
 
 ### Backend functionality
