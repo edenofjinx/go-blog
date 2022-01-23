@@ -37,8 +37,9 @@ go run !(*_test).go envSet -env=production
 ```
 **envSet** is a flagSet which holds additional flags that can be set
 #### envSet flags
-* env
-    * production|development|test - by default, the env is set to production
+* env - production|development|test - by default, the env is set to development
+* migrate - true|false, by default set to false. Used for auto migrate database
+* seed - true|false, by default set to false. Used for seeding database with preset data. Can only be used if **migrate** flag is set to true
 
 # Running tests
 
@@ -86,7 +87,7 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 - [ ] \(optional) User login
 
 ### Backend functionality
-- [ ] \(optional) possibility to enable/disable migration|seed
+- [X] \(optional) possibility to enable/disable migration|seed
 - [X] \(optional) switch httprouter to gin
 
 ### React frontend

@@ -38,7 +38,11 @@ type envSet struct {
 
 func (e *envSet) setFlag() {
 	e.fs = flag.NewFlagSet("envSet", flag.ContinueOnError)
-	e.fs.StringVar(&cfg.env, "env", "production", "environment")
+	e.fs.StringVar(
+		&cfg.env, "env",
+		"development",
+		"Environment variable. By default set to development. Can select from development|test|production",
+	)
 	e.fs.BoolVar(&cfg.migrate, "migrate", false, "Should auto migrate data?")
 	e.fs.BoolVar(
 		&cfg.seed,
