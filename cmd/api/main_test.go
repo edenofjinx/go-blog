@@ -25,10 +25,11 @@ func (suite *TestMainPackage) TestSetServerPort() {
 	err = e.fs.Set("env", "development")
 	suite.Nil(err, "env variable set should not throw an error")
 	e.setEnvironment(&cfg)
+	defaultAppPort := os.Getenv("APP_PORT")
 	os.Setenv("APP_PORT", "test")
 	err = setServerPort(&cfg)
 	suite.Error(err, "should have error")
-	os.Setenv("APP_PORT", "0")
+	os.Setenv("APP_PORT", defaultAppPort)
 }
 
 func (suite *TestMainPackage) TestSetDSN() {
@@ -98,7 +99,16 @@ func (suite *TestMainPackage) TestSetAppCfg() {
 }
 
 func (suite *TestMainPackage) TestSetupDatabase() {
-	_, err := setupDatabase()
+	e.setFlag()
+	e.fs.Set("migrate", "true")
+	e.fs.Set("seed", "true")
+	e.parseEnvFlag()
+	e.setEnvironment(&cfg)
+	setDSN(&cfg)
+	err := setServerPort(&cfg)
+	suite.Nil(err, "should not contain error")
+	setAppCfg()
+	_, err = setupDatabase()
 	suite.Nil(err, "should not contain error")
 }
 

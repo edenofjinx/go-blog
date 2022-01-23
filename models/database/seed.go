@@ -38,10 +38,6 @@ func seedUserGroups(db *driver.DB) error {
 			Name: "Registered",
 		},
 	}
-	err := db.SQL.AutoMigrate(&models.UserGroup{})
-	if err != nil {
-		return err
-	}
 	if db.SQL.Migrator().HasTable(&models.UserGroup{}) {
 		err := db.SQL.First(&models.UserGroup{}).Error
 		if err != nil {
@@ -70,10 +66,6 @@ func seedUsers(db *driver.DB) error {
 			ApiKey:  "80f45b24-874b-4e96-9e69-0efd000eca4a",
 			GroupID: 2,
 		},
-	}
-	err := db.SQL.AutoMigrate(&models.User{})
-	if err != nil {
-		return err
 	}
 	if db.SQL.Migrator().HasTable(&models.User{}) {
 		err := db.SQL.First(&models.User{}).Error
@@ -104,10 +96,6 @@ func seedArticles(db *driver.DB) error {
 			UserID:  2,
 		},
 	}
-	err := db.SQL.AutoMigrate(&models.Article{})
-	if err != nil {
-		return err
-	}
 	if db.SQL.Migrator().HasTable(&models.Article{}) {
 		err := db.SQL.First(&models.Article{}).Error
 		if err != nil {
@@ -136,10 +124,6 @@ func seedComments(db *driver.DB) error {
 			Content:   "Test comment 2",
 			UserID:    2,
 		},
-	}
-	err := db.SQL.AutoMigrate(&models.Comment{})
-	if err != nil {
-		return err
 	}
 	if db.SQL.Migrator().HasTable(&models.Comment{}) {
 		err := db.SQL.First(&models.Comment{}).Error

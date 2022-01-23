@@ -23,9 +23,11 @@ const staticImages = "static/images/"
 
 //config model for application configuration
 type serverConfig struct {
-	port int
-	env  string
-	db   struct {
+	port    int
+	env     string
+	migrate bool
+	seed    bool
+	db      struct {
 		dsn string
 	}
 }
@@ -37,6 +39,13 @@ type envSet struct {
 func (e *envSet) setFlag() {
 	e.fs = flag.NewFlagSet("envSet", flag.ContinueOnError)
 	e.fs.StringVar(&cfg.env, "env", "production", "environment")
+	e.fs.BoolVar(&cfg.migrate, "migrate", false, "Should auto migrate data?")
+	e.fs.BoolVar(
+		&cfg.seed,
+		"seed",
+		false,
+		"Should seed data on launch? Seeding data is only available when migrate is set to true",
+	)
 }
 
 func (e *envSet) parseEnvFlag() {
@@ -156,9 +165,17 @@ func setupDatabase() (*driver.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = database.SeedData(db)
-	if err != nil {
-		return nil, err
+	if cfg.migrate {
+		err = database.MigrateData(db)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if cfg.migrate && cfg.seed {
+		err = database.SeedData(db)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return db, nil
 }

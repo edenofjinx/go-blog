@@ -11,11 +11,16 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"testing"
 )
 
 type seedTestSuite struct {
 	suite.Suite
 	db *driver.DB
+}
+
+func TestSuiteSeedData(t *testing.T) {
+	suite.Run(t, new(seedTestSuite))
 }
 
 func (suite *seedTestSuite) SetupSuite() {
