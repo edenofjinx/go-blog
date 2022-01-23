@@ -1,8 +1,7 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
+	"github.com/gin-gonic/gin"
 )
 
 // JsonResponse hold json response message
@@ -10,19 +9,24 @@ type JsonResponse struct {
 	Message string `json:"message"`
 }
 
-// ResponseJson handles json responses
-func (repo *Repository) ResponseJson(w http.ResponseWriter, status int, data interface{}, wrap string) error {
-	wrapper := make(map[string]interface{})
-	wrapper[wrap] = data
-	js, err := json.Marshal(wrapper)
-	if err != nil {
-		return err
+func GetSuccessMessageWrap(data string) gin.H {
+	return gin.H{
+		"success": JsonResponse{
+			data,
+		},
 	}
-	w.Header().Set(AppContentType, AppJson)
-	w.WriteHeader(status)
-	_, err = w.Write(js)
-	if err != nil {
-		return err
+}
+
+func GetErrorMessageWrap(data string) gin.H {
+	return gin.H{
+		"error": JsonResponse{
+			data,
+		},
 	}
-	return nil
+}
+
+func GetDataWrap(data interface{}) gin.H {
+	return gin.H{
+		"data": data,
+	}
 }

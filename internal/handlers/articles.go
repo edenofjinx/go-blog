@@ -1,33 +1,26 @@
 package handlers
 
 import (
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 // GetArticlesList handler to get articles list
-func (repo *Repository) GetArticlesList(w http.ResponseWriter, r *http.Request) {
-	articles, err := repo.DB.GetArticlesList(r)
+func (repo *Repository) GetArticlesList(c *gin.Context) {
+	articles, err := repo.DB.GetArticlesList(c)
 	if err != nil {
-		repo.ErrorHandler(w, err, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not get article list"))
 		return
 	}
-	err = repo.ResponseJson(w, http.StatusAccepted, articles, "data")
-	if err != nil {
-		repo.ErrorHandler(w, err, http.StatusInternalServerError)
-		return
-	}
+	c.JSON(http.StatusAccepted, GetDataWrap(articles))
 }
 
 // GetArticleById handler to get article data by article id
-func (repo *Repository) GetArticleById(w http.ResponseWriter, r *http.Request) {
-	articles, err := repo.DB.GetArticleById(r)
+func (repo *Repository) GetArticleById(c *gin.Context) {
+	articles, err := repo.DB.GetArticleById(c)
 	if err != nil {
-		repo.ErrorHandler(w, err, http.StatusInternalServerError)
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not get article by id."))
 		return
 	}
-	err = repo.ResponseJson(w, http.StatusAccepted, articles, "data")
-	if err != nil {
-		repo.ErrorHandler(w, err, http.StatusInternalServerError)
-		return
-	}
+	c.JSON(http.StatusAccepted, GetDataWrap(articles))
 }

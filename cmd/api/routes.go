@@ -2,54 +2,34 @@ package main
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/internal/handlers"
-	"context"
-	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
-	"github.com/rs/cors"
+	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
-// wrap wraps the handler to return httprouter
-func wrap(next http.Handler) httprouter.Handle {
-	return func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		ctx := context.WithValue(r.Context(), httprouter.ParamsKey, ps)
-		next.ServeHTTP(w, r.WithContext(ctx))
-	}
-}
-
 // routes holds data of all available routes for the app
-func routes() http.Handler {
-	router := httprouter.New()
-	secure := alice.New(verifyApiKey)
-	router.ServeFiles("/static/images/*filepath", http.Dir("static/images"))
-	protectedRoutes(router, &secure)
-	unprotectedRoutes(router)
-	c := cors.New(cors.Options{
-		AllowedOrigins:         []string{"*"},
-		AllowOriginFunc:        nil,
-		AllowOriginRequestFunc: nil,
-		AllowedMethods:         nil,
-		AllowedHeaders:         []string{handlers.AppContentType, handlers.AppApiKey},
-		ExposedHeaders:         nil,
-		MaxAge:                 30,
-		AllowCredentials:       false,
-		OptionsPassthrough:     false,
-		OptionsSuccessStatus:   0,
-		Debug:                  false,
+func routes() *gin.Engine {
+	mux := gin.Default()
+	protected := mux.Group("/")
+	protected.Use(verifyApiKey())
+	setProtectedRoutes(protected)
+	unprotected := mux.Group("/")
+	setUnprotectedRoutes(unprotected)
+	mux.NoRoute(func(c *gin.Context) {
+		c.JSON(http.StatusNotFound, handlers.GetErrorMessageWrap("The page was not found."))
 	})
-	return c.Handler(router)
+	mux.Static("/static", "../../static")
+	return mux
 }
 
-// unprotectedRoutes holds routes that are not protected by an api key
-func unprotectedRoutes(r *httprouter.Router) {
-	r.GET("/v1/status", handlers.Repo.StatusHandler)
+// setUnprotectedRoutes holds routes that are not protected by an api key
+func setUnprotectedRoutes(rg *gin.RouterGroup) {
+	rg.GET("/v1/status", handlers.Repo.StatusHandler)
 }
 
-// protectedRoutes holds routes that are protected by an api key
-func protectedRoutes(r *httprouter.Router, s *alice.Chain) {
-	r.GET("/v1/articles", wrap(s.ThenFunc(handlers.Repo.GetArticlesList)))
-	r.GET("/v1/article/:id", wrap(s.ThenFunc(handlers.Repo.GetArticleById)))
-	r.GET("/v1/article/:id/comments", wrap(s.ThenFunc(handlers.Repo.GetCommentsByArticleId)))
-
-	r.POST("/v1/comment/save", wrap(s.ThenFunc(handlers.Repo.SaveComment)))
+// setProtectedRoutes holds routes that are protected by an api key
+func setProtectedRoutes(rg *gin.RouterGroup) {
+	rg.GET("/v1/articles", handlers.Repo.GetArticlesList)
+	rg.GET("/v1/article/:id", handlers.Repo.GetArticleById)
+	rg.GET("/v1/article/:id/comments", handlers.Repo.GetCommentsByArticleId)
+	rg.POST("/v1/comment/save", handlers.Repo.SaveComment)
 }

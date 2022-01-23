@@ -1,13 +1,9 @@
 package handlers
 
-import "log"
-
 func (suite *handlersTestSuite) TestParseImageTags() {
 	fooString := "\xff"
 	barString := string([]rune(fooString))
-	_, err := suite.testHandlerRepo.parseImageTags(barString)
-	log.Println("*******")
-	log.Println(err)
+	_, _ = suite.testHandlerRepo.parseImageTags(barString)
 }
 
 func (suite *handlersTestSuite) TestSaveImages() {

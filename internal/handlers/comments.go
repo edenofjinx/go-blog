@@ -3,36 +3,32 @@ package handlers
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
-	"errors"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
 )
 
 // GetCommentsByArticleId handler to get comments by article id
-func (repo *Repository) GetCommentsByArticleId(w http.ResponseWriter, r *http.Request) {
-	comments, err := repo.DB.GetCommentsByArticleId(r)
+func (repo *Repository) GetCommentsByArticleId(c *gin.Context) {
+	comments, err := repo.DB.GetCommentsByArticleId(c)
 	if err != nil {
-		repo.ErrorHandler(w, err)
+		c.JSON(http.StatusBadRequest, GetErrorMessageWrap("Could not get comments by article id."))
 		return
 	}
-	err = repo.ResponseJson(w, http.StatusAccepted, comments, "data")
-	if err != nil {
-		repo.ErrorHandler(w, err)
-		return
-	}
+	c.JSON(http.StatusAccepted, GetDataWrap(comments))
 }
 
 // SaveComment saves comment into the database
-func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
+func (repo *Repository) SaveComment(c *gin.Context) {
 	var payload models.CommentPayload
-	err := json.NewDecoder(r.Body).Decode(&payload)
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
 	if err != nil {
-		repo.ErrorHandler(w, err)
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the comment. Try again later."))
 		return
 	}
 	content, er := repo.parseImageTags(payload.Content)
 	if er != nil {
-		repo.ErrorHandler(w, er)
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Error saving images. Try again later."))
 		return
 	}
 	var comment models.Comment
@@ -43,15 +39,8 @@ func (repo *Repository) SaveComment(w http.ResponseWriter, r *http.Request) {
 	comment.UpdatedAt = time.Now()
 	err = repo.DB.InsertComment(comment)
 	if err != nil {
-		repo.ErrorHandler(w, errors.New("could not save the comment"))
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the comment"))
 		return
 	}
-	message := JsonResponse{
-		Message: "Comment has been successfully saved.",
-	}
-	err = repo.ResponseJson(w, http.StatusOK, message, "success")
-	if err != nil {
-		repo.ErrorHandler(w, err)
-		return
-	}
+	c.JSON(http.StatusOK, GetSuccessMessageWrap("Comment has been successfully saved."))
 }
