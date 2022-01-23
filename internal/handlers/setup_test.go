@@ -5,10 +5,13 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 	"log"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -147,10 +150,13 @@ func TestMysqlTestSuite(t *testing.T) {
 	suite.Run(t, new(handlersTestSuite))
 }
 
-func generateNewGETRequest(url string, pagination testPagination) (*http.Request, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
+func generateNewGETRequest(testUrl string, pagination testPagination) (*gin.Context, *httptest.ResponseRecorder) {
+	rr := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(rr)
+	req := &http.Request{
+		URL: &url.URL{
+			Path: testUrl,
+		},
 	}
 	if pagination.limit != "" {
 		q := req.URL.Query()
@@ -167,5 +173,6 @@ func generateNewGETRequest(url string, pagination testPagination) (*http.Request
 		q.Add("order", pagination.order)
 		req.URL.RawQuery = q.Encode()
 	}
-	return req, nil
+	c.Request = req
+	return c, rr
 }

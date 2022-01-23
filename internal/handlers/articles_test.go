@@ -2,12 +2,10 @@ package handlers
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
-	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
-	"net/http/httptest"
 )
 
 var testsForGetArticlesList = []struct {
@@ -87,13 +85,11 @@ var testsForGetArticleById = []struct {
 func (suite *handlersTestSuite) TestGetArticlesList() {
 	for _, t := range testsForGetArticlesList {
 		m := make(map[string][]models.Article)
-		req, err := generateNewGETRequest("/v1/articles", t.pagination)
-		suite.Nil(err, "failed to create new request")
-		rr := httptest.NewRecorder()
-		suite.testHandlerRepo.GetArticlesList(rr, req)
+		c, rr := generateNewGETRequest("/v1/articles/", t.pagination)
+		suite.testHandlerRepo.GetArticlesList(c)
 		status := rr.Code
 		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d", t.expectedCode, status))
-		err = json.Unmarshal(rr.Body.Bytes(), &m)
+		err := json.Unmarshal(rr.Body.Bytes(), &m)
 		suite.Nil(err, "could not unmarshal the response body into a map")
 		suite.Equal(t.expectedTitle, m["data"][0].Title, fmt.Sprintf("status code should be %s but got %s", t.expectedTitle, m["data"][0].Title))
 	}
@@ -103,18 +99,20 @@ func (suite *handlersTestSuite) TestGetArticleById() {
 	var p testPagination
 	for _, t := range testsForGetArticleById {
 		m := make(map[string]models.Article)
-		req, err := generateNewGETRequest("/v1/article/:id", p)
-		suite.Nil(err, "failed to create http request")
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, httprouter.ParamsKey, httprouter.Params{
-			{"id", t.requestID},
-		})
-		rr := httptest.NewRecorder()
-		req = req.WithContext(ctx)
-		suite.testHandlerRepo.GetArticleById(rr, req)
+		c, rr := generateNewGETRequest("/v1/article/:id", p)
+		c.Params = []gin.Param{
+			{
+				Key:   "id",
+				Value: t.requestID,
+			},
+		}
+		suite.testHandlerRepo.GetArticleById(c)
 		status := rr.Code
 		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d", t.expectedCode, status))
-		err = json.Unmarshal(rr.Body.Bytes(), &m)
+		if t.expectedCode == http.StatusInternalServerError && t.expectedContent == "" {
+			continue
+		}
+		err := json.Unmarshal(rr.Body.Bytes(), &m)
 		suite.Nil(err, "could not unmarshal the response body into a map")
 		suite.Equal(t.expectedTitle, m["data"].Title, fmt.Sprintf("status code should be %s but got %s", t.expectedTitle, m["data"].Title))
 	}

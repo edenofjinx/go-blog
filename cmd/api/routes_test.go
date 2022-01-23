@@ -1,33 +1,52 @@
 package main
 
 import (
-	"fmt"
-	"github.com/julienschmidt/httprouter"
-	"github.com/justinas/alice"
+	"github.com/gin-gonic/gin"
 	"net/http"
+	"net/http/httptest"
 )
 
-func (suite *TestMainPackage) TestProtectedRoutes() {
-	router := httprouter.New()
-	secure := alice.New(verifyApiKey)
-	protectedRoutes(router, &secure)
-	h, _, _ := router.Lookup(http.MethodGet, "/v1/article/1")
-	suite.NotNil(h, "/v1/article/:id route should exist")
+func (suite *TestMainPackage) TestSetProtectedRoutes() {
+	mux := gin.Default()
+	protected := mux.Group("/")
+	setProtectedRoutes(protected)
+	r := mux.Routes()
+	found := false
+	for _, p := range r {
+		if p.Path == "/v1/article/:id" {
+			found = true
+			break
+		}
+	}
+	suite.Equal(true, found, "/v1/article/:id endpoint should exist")
 }
 
-func (suite *TestMainPackage) TestUnprotectedRoutes() {
-	router := httprouter.New()
-	unprotectedRoutes(router)
-	h, _, _ := router.Lookup(http.MethodGet, "/v1/status")
-	suite.NotNil(h, "/v1/status route should exist")
+func (suite *TestMainPackage) TestSetUnprotectedRoutes() {
+	mux := gin.Default()
+	unprotected := mux.Group("/")
+	setUnprotectedRoutes(unprotected)
+	r := mux.Routes()
+	found := false
+	for _, p := range r {
+		if p.Path == "/v1/status" {
+			found = true
+			break
+		}
+	}
+	suite.Equal(true, found, "/v1/status endpoint should exist")
 }
 
 func (suite *TestMainPackage) TestRoutes() {
 	mux := routes()
-	switch v := mux.(type) {
-	case http.Handler:
-		//correct handler, do nothing
-	default:
-		suite.Fail(fmt.Sprintf("type is not http.Handler but is %T", v))
-	}
+	r := mux.Routes()
+	l := len(r)
+	suite.NotEqual(0, l, "mux should have routes assigned")
+}
+
+func (suite *TestMainPackage) TestNotExistingRoute() {
+	v := routes()
+	req := httptest.NewRequest(http.MethodGet, "/test/test/v1", nil)
+	res := httptest.NewRecorder()
+	v.ServeHTTP(res, req)
+	suite.Equal(http.StatusNotFound, res.Code, "response codes should be equal")
 }

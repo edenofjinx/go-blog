@@ -2,10 +2,11 @@ package dbrepo
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
-	"context"
 	"fmt"
-	"github.com/julienschmidt/httprouter"
+	"github.com/gin-gonic/gin"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"time"
 )
 
@@ -247,9 +248,8 @@ var testsForInsertComment = []struct {
 
 func (suite *databaseRequestTestSuite) TestGetArticlesList() {
 	for _, t := range testsForGetArticlesList {
-		req, err := generateNewGETRequest("/v1/articles", t.pagination)
-		suite.Nil(err, "failed to create http request")
-		list, err := suite.testRepo.GetArticlesList(req)
+		c := generateNewGETRequest("/v1/articles", t.pagination)
+		list, err := suite.testRepo.GetArticlesList(c)
 		if err != nil {
 			suite.Fail(fmt.Sprintf("failed to load articles in test name %s", t.name))
 		}
@@ -282,14 +282,14 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 		order: "",
 	}
 	for _, t := range testsForGetArticleById {
-		req, err := generateNewGETRequest("/v1/article/:id", pagination)
-		suite.Nil(err, "failed to create http request")
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, httprouter.ParamsKey, httprouter.Params{
-			{"id", t.requestID},
-		})
-		req = req.WithContext(ctx)
-		a, err := suite.testRepo.GetArticleById(req)
+		c := generateNewGETRequest("/v1/article/:id", pagination)
+		c.Params = []gin.Param{
+			{
+				Key:   "id",
+				Value: t.requestID,
+			},
+		}
+		ar, err := suite.testRepo.GetArticleById(c)
 		if err != nil {
 			if t.requestID == "" {
 				continue
@@ -298,12 +298,12 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 		}
 		suite.Equal(
 			t.expectedTitle,
-			a.Title,
+			ar.Title,
 			fmt.Sprintf("expected and actual title are not equal in test name %s", t.name),
 		)
 		suite.Equal(
 			t.expectedContent,
-			a.Content,
+			ar.Content,
 			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
 		)
 	}
@@ -311,14 +311,14 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 
 func (suite *databaseRequestTestSuite) TestGetCommentsByArticleId() {
 	for _, t := range testsForGetCommentsByArticleId {
-		req, err := generateNewGETRequest("/v1/article/:id/comments", t.pagination)
-		suite.Nil(err, "failed to create http request")
-		ctx := req.Context()
-		ctx = context.WithValue(ctx, httprouter.ParamsKey, httprouter.Params{
-			{"id", t.articleId},
-		})
-		req = req.WithContext(ctx)
-		list, err := suite.testRepo.GetCommentsByArticleId(req)
+		c := generateNewGETRequest("/v1/article/:id/comments", t.pagination)
+		c.Params = []gin.Param{
+			{
+				Key:   "id",
+				Value: t.articleId,
+			},
+		}
+		list, err := suite.testRepo.GetCommentsByArticleId(c)
 		if err != nil {
 			if t.articleId == "" {
 				continue
@@ -372,10 +372,12 @@ func (suite *databaseRequestTestSuite) TestInsertComment() {
 	}
 }
 
-func generateNewGETRequest(url string, pagination testPagination) (*http.Request, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
+func generateNewGETRequest(testUrl string, pagination testPagination) *gin.Context {
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	req := &http.Request{
+		URL: &url.URL{
+			Path: testUrl,
+		},
 	}
 	if pagination.limit != "" {
 		q := req.URL.Query()
@@ -392,5 +394,6 @@ func generateNewGETRequest(url string, pagination testPagination) (*http.Request
 		q.Add("order", pagination.order)
 		req.URL.RawQuery = q.Encode()
 	}
-	return req, nil
+	c.Request = req
+	return c
 }

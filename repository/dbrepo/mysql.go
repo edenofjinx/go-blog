@@ -2,15 +2,14 @@ package dbrepo
 
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
-	"github.com/julienschmidt/httprouter"
-	"net/http"
+	"github.com/gin-gonic/gin"
 	"strconv"
 )
 
 // GetArticlesList get a list of articles with pagination
-func (m *mysqlDatabaseRepo) GetArticlesList(r *http.Request) ([]*models.Article, error) {
+func (m *mysqlDatabaseRepo) GetArticlesList(c *gin.Context) ([]*models.Article, error) {
 	var articles []*models.Article
-	rows := m.DB.Scopes(paginate(r, m.App)).Find(&articles)
+	rows := m.DB.Scopes(paginate(c.Request, m.App)).Find(&articles)
 	if rows.Error != nil {
 		m.App.ErrorLog.Println(rows.Error)
 		return nil, rows.Error
@@ -19,10 +18,9 @@ func (m *mysqlDatabaseRepo) GetArticlesList(r *http.Request) ([]*models.Article,
 }
 
 // GetArticleById get an article by a given article id
-func (m *mysqlDatabaseRepo) GetArticleById(r *http.Request) (models.ArticleWithContent, error) {
+func (m *mysqlDatabaseRepo) GetArticleById(c *gin.Context) (models.ArticleWithContent, error) {
 	var article models.ArticleWithContent
-	params := httprouter.ParamsFromContext(r.Context())
-	articleId, err := strconv.Atoi(params.ByName("id"))
+	articleId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		m.App.ErrorLog.Println(err)
 		return article, err
@@ -33,15 +31,14 @@ func (m *mysqlDatabaseRepo) GetArticleById(r *http.Request) (models.ArticleWithC
 }
 
 // GetCommentsByArticleId get comments by article id with pagination
-func (m *mysqlDatabaseRepo) GetCommentsByArticleId(r *http.Request) ([]*models.Comment, error) {
+func (m *mysqlDatabaseRepo) GetCommentsByArticleId(c *gin.Context) ([]*models.Comment, error) {
 	var comments []*models.Comment
-	params := httprouter.ParamsFromContext(r.Context())
-	articleId, err := strconv.Atoi(params.ByName("id"))
+	articleId, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
 		m.App.ErrorLog.Println(err)
 		return nil, err
 	}
-	rows := m.DB.Scopes(paginate(r, m.App)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
+	rows := m.DB.Scopes(paginate(c.Request, m.App)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
 	if rows.Error != nil {
 		m.App.ErrorLog.Println(rows.Error)
 		return nil, rows.Error

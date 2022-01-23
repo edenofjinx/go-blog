@@ -63,7 +63,7 @@ go test -p=1 ./...
 # POST
 /v1/comment/save #saves a comment to an article
 ```
-A valid request needs to provide **api_key** in the header for authorization.
+A valid request needs to provide **api_key** in the header for authorization (except **/v1/status**).
 
 # Modules used
 * [GoDotEnv](https://github.com/joho/godotenv) v1.4.0
@@ -83,7 +83,7 @@ A valid request needs to provide **api_key** in the header for authorization.
     - [ ] \(optional) save article
     - [ ] \(optional) edit article
     - [ ] \(optional)remove article
-- [] \(optional) User registration
+- [ ] \(optional) User registration
 - [ ] \(optional) User login
 
 ### Backend functionality
