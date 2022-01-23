@@ -67,8 +67,7 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 
 # Modules used
 * [GoDotEnv](https://github.com/joho/godotenv) v1.4.0
-* [HttpRouter](https://github.com/julienschmidt/httprouter) v1.3.0
-* [Alice](https://github.com/justinas/alice) v1.2.0
+* [Gin](https://github.com/gin-gonic/gin) v1.7.7
 * [Testify](https://github.com/stretchr/testify) v1.7.0
 * [Go Networking](https://pkg.go.dev/golang.org/x/net) v0.0.0-20211216030914-fe4d6282115f
 * [GORM/Mysql](https://gorm.io/) v1.2.1
@@ -88,7 +87,7 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 
 ### Backend functionality
 - [ ] \(optional) possibility to enable/disable migration|seed
-- [ ] \(optional) switch httprouter to gin
+- [X] \(optional) switch httprouter to gin
 
 ### React frontend
 - [ ] \(optional) create a react frontend app
