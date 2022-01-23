@@ -33,7 +33,7 @@ go run !(*_test).go
 
 Additional flags
 ```sh
-go run !(*_test).go envSet -env=production
+go run !(*_test).go envSet -env=production -seed=true -migrate=true
 ```
 **envSet** is a flagSet which holds additional flags that can be set
 #### envSet flags

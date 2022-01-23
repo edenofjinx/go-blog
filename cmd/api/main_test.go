@@ -78,7 +78,7 @@ func (suite *TestMainPackage) TestSetEnvironment() {
 	e.setFlag()
 	suite.Nil(err, "env variable set should not throw an error")
 	e.setEnvironment(&cfg)
-	suite.Equal("production", cfg.env)
+	suite.Equal("development", cfg.env)
 }
 
 func (suite *TestMainPackage) TestLoadEnvFile() {
