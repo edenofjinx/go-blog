@@ -16,9 +16,27 @@ func (m *mysqlDatabaseRepo) GetCommentsByArticleId(articleId int, r *http.Reques
 	return comments, nil
 }
 
-// InsertComment saves comment for given article
-func (m *mysqlDatabaseRepo) InsertComment(comment models.Comment) error {
+// SaveComment saves comment for given article
+func (m *mysqlDatabaseRepo) SaveComment(comment models.Comment) error {
 	result := m.DB.Create(&comment)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// UpdateComment updates a comment
+func (m *mysqlDatabaseRepo) UpdateComment(comment models.Comment) error {
+	result := m.DB.Updates(&comment)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteComment deletes a comment by id
+func (m *mysqlDatabaseRepo) DeleteComment(commentID int) error {
+	result := m.DB.Delete(&models.Comment{}, commentID)
 	if result.Error != nil {
 		return result.Error
 	}

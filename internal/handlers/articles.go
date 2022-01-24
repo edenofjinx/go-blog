@@ -4,7 +4,6 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -34,6 +33,7 @@ func (repo *Repository) GetArticleById(c *gin.Context) {
 	c.JSON(http.StatusAccepted, GetDataWrap(articles))
 }
 
+// SaveArticle handler to save/update an article
 func (repo *Repository) SaveArticle(c *gin.Context) {
 	var payload models.ArticlePayload
 	err := json.NewDecoder(c.Request.Body).Decode(&payload)
@@ -47,25 +47,40 @@ func (repo *Repository) SaveArticle(c *gin.Context) {
 		return
 	}
 	var am models.Article
-	log.Println(payload.ArticleID)
-	if payload.ArticleID != 0 {
-		article, err := repo.DB.GetArticleById(payload.ArticleID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Error saving images. Try again later."))
-			return
-		}
-		am = article.Article
-	} else {
-		am.CreatedAt = time.Now()
-		am.UserID = payload.UserID
-	}
 	am.Title = payload.Title
 	am.Content = content
 	am.UpdatedAt = time.Now()
+	am.UserID = payload.UserID
+	if payload.ID != 0 {
+		am.ID = payload.ID
+		err := repo.DB.UpdateArticle(am)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Error updating an article. Try again later."))
+			return
+		}
+		c.JSON(http.StatusAccepted, GetSuccessMessageWrap("An article has been updated."))
+		return
+	}
+	am.CreatedAt = time.Now()
 	err = repo.DB.SaveArticle(am)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the article"))
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the article. Try again later."))
 		return
 	}
 	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("Article has been saved."))
+}
+
+// DeleteArticle is a handler for deleting an article
+func (repo *Repository) DeleteArticle(c *gin.Context) {
+	articleId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GetErrorMessageWrap("Incorrect article id provided."))
+		return
+	}
+	err = repo.DB.DeleteArticle(articleId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not delete an article."))
+		return
+	}
+	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("An article has been deleted."))
 }

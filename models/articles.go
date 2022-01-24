@@ -20,8 +20,8 @@ type ArticleWithContent struct {
 }
 
 type ArticlePayload struct {
-	Title     string `json:"title"`
-	Content   string `json:"content"`
-	UserID    int    `json:"user_id"`
-	ArticleID int    `json:"article_id"`
+	ID      uint   `json:"id"`
+	Title   string `json:"title"`
+	Content string `json:"content"`
+	UserID  int    `json:"user_id"`
 }

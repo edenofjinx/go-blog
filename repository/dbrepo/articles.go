@@ -24,12 +24,29 @@ func (m *mysqlDatabaseRepo) GetArticleById(articleId int) (models.ArticleWithCon
 	return article, nil
 }
 
+// SaveArticle saves an article
 func (m *mysqlDatabaseRepo) SaveArticle(article models.Article) error {
-	if m.DB.Model(&article).Where("id = ?", article.ID).Updates(&article).RowsAffected == 0 {
-		result := m.DB.Create(&article)
-		if result.Error != nil {
-			return result.Error
-		}
+	result := m.DB.Create(&article)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// UpdateArticle updates an article
+func (m *mysqlDatabaseRepo) UpdateArticle(article models.Article) error {
+	result := m.DB.Updates(&article)
+	if result.Error != nil {
+		return result.Error
+	}
+	return nil
+}
+
+// DeleteArticle updates an article
+func (m *mysqlDatabaseRepo) DeleteArticle(articleId int) error {
+	result := m.DB.Delete(&models.Article{}, articleId)
+	if result.Error != nil {
+		return result.Error
 	}
 	return nil
 }

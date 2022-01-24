@@ -40,12 +40,37 @@ func (repo *Repository) SaveComment(c *gin.Context) {
 	comment.Content = content
 	comment.UserID = payload.UserID
 	comment.ArticleID = payload.ArticleID
-	comment.CreatedAt = time.Now()
 	comment.UpdatedAt = time.Now()
-	err = repo.DB.InsertComment(comment)
+	if payload.ID != 0 {
+		comment.ID = payload.ID
+		err := repo.DB.UpdateComment(comment)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Error updating comment. Try again later."))
+			return
+		}
+		c.JSON(http.StatusAccepted, GetSuccessMessageWrap("A comment has been updated."))
+		return
+	}
+	comment.CreatedAt = time.Now()
+	err = repo.DB.SaveComment(comment)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the comment"))
 		return
 	}
 	c.JSON(http.StatusOK, GetSuccessMessageWrap("Comment has been successfully saved."))
+}
+
+// DeleteComment is a handler for deleting a comment
+func (repo *Repository) DeleteComment(c *gin.Context) {
+	commentId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GetErrorMessageWrap("Incorrect comment id provided."))
+		return
+	}
+	err = repo.DB.DeleteComment(commentId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not delete a comment."))
+		return
+	}
+	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("A comment has been deleted."))
 }

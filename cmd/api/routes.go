@@ -30,7 +30,9 @@ func setUnprotectedRoutes(rg *gin.RouterGroup) {
 func setProtectedRoutes(rg *gin.RouterGroup) {
 	rg.GET("/v1/articles", handlers.Repo.GetArticlesList)
 	rg.GET("/v1/article/:id", handlers.Repo.GetArticleById)
+	rg.POST("/v1/article/save", handlers.Repo.SaveArticle)
+	rg.POST("/v1/article/delete/:id", handlers.Repo.DeleteArticle)
 	rg.GET("/v1/article/:id/comments", handlers.Repo.GetCommentsByArticleId)
 	rg.POST("/v1/comment/save", handlers.Repo.SaveComment)
-	rg.POST("/v1/article/save", handlers.Repo.SaveArticle)
+	rg.POST("/v1/comment/delete/:id", handlers.Repo.DeleteComment)
 }
