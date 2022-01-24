@@ -36,7 +36,7 @@ func (m *mysqlDatabaseRepo) UpdateComment(comment models.Comment) error {
 
 // DeleteComment deletes a comment by id
 func (m *mysqlDatabaseRepo) DeleteComment(commentID int) error {
-	result := m.DB.Delete(&models.Comment{}, commentID)
+	result := m.DB.Unscoped().Delete(&models.Comment{}, commentID)
 	if result.Error != nil {
 		return result.Error
 	}

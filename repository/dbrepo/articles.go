@@ -44,7 +44,7 @@ func (m *mysqlDatabaseRepo) UpdateArticle(article models.Article) error {
 
 // DeleteArticle updates an article
 func (m *mysqlDatabaseRepo) DeleteArticle(articleId int) error {
-	result := m.DB.Delete(&models.Article{}, articleId)
+	result := m.DB.Unscoped().Delete(&models.Article{}, articleId)
 	if result.Error != nil {
 		return result.Error
 	}
