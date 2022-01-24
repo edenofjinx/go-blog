@@ -5,9 +5,13 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/driver"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/suite"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -137,4 +141,30 @@ func (suite *databaseRequestTestSuite) TearDownSuite() {
 
 func TestMysqlTestSuite(t *testing.T) {
 	suite.Run(t, new(databaseRequestTestSuite))
+}
+
+func generateNewGETRequest(testUrl string, pagination testPagination) *gin.Context {
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	req := &http.Request{
+		URL: &url.URL{
+			Path: testUrl,
+		},
+	}
+	if pagination.limit != "" {
+		q := req.URL.Query()
+		q.Add("limit", pagination.limit)
+		req.URL.RawQuery = q.Encode()
+	}
+	if pagination.page != "" {
+		q := req.URL.Query()
+		q.Add("page", pagination.page)
+		req.URL.RawQuery = q.Encode()
+	}
+	if pagination.order != "" {
+		q := req.URL.Query()
+		q.Add("order", pagination.order)
+		req.URL.RawQuery = q.Encode()
+	}
+	c.Request = req
+	return c
 }
