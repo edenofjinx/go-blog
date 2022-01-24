@@ -32,4 +32,5 @@ func setProtectedRoutes(rg *gin.RouterGroup) {
 	rg.GET("/v1/article/:id", handlers.Repo.GetArticleById)
 	rg.GET("/v1/article/:id/comments", handlers.Repo.GetCommentsByArticleId)
 	rg.POST("/v1/comment/save", handlers.Repo.SaveComment)
+	rg.POST("/v1/article/save", handlers.Repo.SaveArticle)
 }

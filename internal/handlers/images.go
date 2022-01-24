@@ -105,7 +105,7 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 			ch <- resp
 			return
 		}
-		url = f.Name()
+		url = repo.App.StaticImages + imgName + "." + imageType
 
 	case "jpeg":
 		im, err := jpeg.Decode(r)
@@ -126,7 +126,7 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 			ch <- resp
 			return
 		}
-		url = f.Name()
+		url = repo.App.StaticImages + imgName + "." + imageType
 
 	case "gif":
 		im, err := gif.Decode(r)
@@ -147,7 +147,7 @@ func (repo *Repository) saveImages(data string, ch chan imageUploadResult) {
 			ch <- resp
 			return
 		}
-		url = f.Name()
+		url = repo.App.StaticImages + imgName + "." + imageType
 	default:
 		resp.Error = errors.New(fmt.Sprintf("incorrect image type provided: %s", imageType))
 		ch <- resp

@@ -3,7 +3,7 @@ package dbrepo
 import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"github.com/gin-gonic/gin"
-	"strconv"
+	"net/http"
 )
 
 // GetArticlesList get a list of articles with pagination
@@ -18,27 +18,17 @@ func (m *mysqlDatabaseRepo) GetArticlesList(c *gin.Context) ([]*models.Article, 
 }
 
 // GetArticleById get an article by a given article id
-func (m *mysqlDatabaseRepo) GetArticleById(c *gin.Context) (models.ArticleWithContent, error) {
+func (m *mysqlDatabaseRepo) GetArticleById(articleId int) (models.ArticleWithContent, error) {
 	var article models.ArticleWithContent
-	articleId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		m.App.ErrorLog.Println(err)
-		return article, err
-	}
 	row := m.DB.First(&models.Article{}, articleId)
 	row.Scan(&article)
 	return article, nil
 }
 
 // GetCommentsByArticleId get comments by article id with pagination
-func (m *mysqlDatabaseRepo) GetCommentsByArticleId(c *gin.Context) ([]*models.Comment, error) {
+func (m *mysqlDatabaseRepo) GetCommentsByArticleId(articleId int, r *http.Request) ([]*models.Comment, error) {
 	var comments []*models.Comment
-	articleId, err := strconv.Atoi(c.Param("id"))
-	if err != nil {
-		m.App.ErrorLog.Println(err)
-		return nil, err
-	}
-	rows := m.DB.Scopes(paginate(c.Request, m.App)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
+	rows := m.DB.Scopes(paginate(r, m.App)).Where(&models.Comment{ArticleID: articleId}).Find(&comments)
 	if rows.Error != nil {
 		m.App.ErrorLog.Println(rows.Error)
 		return nil, rows.Error
@@ -64,6 +54,16 @@ func (m *mysqlDatabaseRepo) InsertComment(comment models.Comment) error {
 	result := m.DB.Create(&comment)
 	if result.Error != nil {
 		return result.Error
+	}
+	return nil
+}
+
+func (m *mysqlDatabaseRepo) SaveArticle(article models.Article) error {
+	if m.DB.Model(&article).Where("id = ?", article.ID).Updates(&article).RowsAffected == 0 {
+		result := m.DB.Create(&article)
+		if result.Error != nil {
+			return result.Error
+		}
 	}
 	return nil
 }

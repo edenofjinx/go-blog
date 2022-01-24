@@ -69,14 +69,21 @@ var testsForGetArticleById = []struct {
 	{
 		name:            "get article with non existing id string",
 		requestID:       "test",
-		expectedCode:    http.StatusInternalServerError,
+		expectedCode:    http.StatusBadRequest,
 		expectedTitle:   "",
 		expectedContent: "",
 	},
 	{
 		name:            "get article with no id",
-		expectedCode:    http.StatusInternalServerError,
+		expectedCode:    http.StatusBadRequest,
 		requestID:       "",
+		expectedTitle:   "",
+		expectedContent: "",
+	},
+	{
+		name:            "get article with no string as id",
+		expectedCode:    http.StatusBadRequest,
+		requestID:       "test",
 		expectedTitle:   "",
 		expectedContent: "",
 	},
@@ -109,7 +116,7 @@ func (suite *handlersTestSuite) TestGetArticleById() {
 		suite.testHandlerRepo.GetArticleById(c)
 		status := rr.Code
 		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d", t.expectedCode, status))
-		if t.expectedCode == http.StatusInternalServerError && t.expectedContent == "" {
+		if t.expectedCode == status && t.expectedContent == "" {
 			continue
 		}
 		err := json.Unmarshal(rr.Body.Bytes(), &m)

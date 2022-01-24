@@ -5,12 +5,17 @@ import (
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 	"time"
 )
 
 // GetCommentsByArticleId handler to get comments by article id
 func (repo *Repository) GetCommentsByArticleId(c *gin.Context) {
-	comments, err := repo.DB.GetCommentsByArticleId(c)
+	articleId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, GetErrorMessageWrap("Could not load article with id."))
+	}
+	comments, err := repo.DB.GetCommentsByArticleId(articleId, c.Request)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, GetErrorMessageWrap("Could not get comments by article id."))
 		return

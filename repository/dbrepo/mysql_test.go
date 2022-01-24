@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -70,35 +71,35 @@ var testsForGetArticlesList = []struct {
 
 var testsForGetArticleById = []struct {
 	name            string
-	requestID       string
+	requestID       int
 	expectedTitle   string
 	expectedContent string
 	testNoID        bool
 }{
 	{
 		name:            "get article with id 1",
-		requestID:       "1",
+		requestID:       1,
 		expectedTitle:   testArticles[0].Title,
 		expectedContent: testArticles[0].Content,
 		testNoID:        false,
 	},
 	{
 		name:            "get article with id 2",
-		requestID:       "2",
+		requestID:       2,
 		expectedTitle:   testArticles[1].Title,
 		expectedContent: testArticles[1].Content,
 		testNoID:        false,
 	},
 	{
 		name:            "get article with non existing id",
-		requestID:       "99",
+		requestID:       99,
 		expectedTitle:   "",
 		expectedContent: "",
 		testNoID:        false,
 	},
 	{
 		name:            "get article with no id",
-		requestID:       "",
+		requestID:       -500,
 		expectedTitle:   "",
 		expectedContent: "",
 	},
@@ -168,7 +169,7 @@ var testsForGetCommentsByArticleId = []struct {
 	},
 	{
 		name:            "comments list with incorrect article id",
-		articleId:       "",
+		articleId:       "-500",
 		pagination:      testPagination{limit: "", page: "", order: ""},
 		expectedLength:  0,
 		expectedContent: "",
@@ -276,25 +277,13 @@ func (suite *databaseRequestTestSuite) TestGetArticlesList() {
 }
 
 func (suite *databaseRequestTestSuite) TestGetArticleById() {
-	pagination := testPagination{
-		limit: "",
-		page:  "",
-		order: "",
-	}
 	for _, t := range testsForGetArticleById {
-		c := generateNewGETRequest("/v1/article/:id", pagination)
-		c.Params = []gin.Param{
-			{
-				Key:   "id",
-				Value: t.requestID,
-			},
-		}
-		ar, err := suite.testRepo.GetArticleById(c)
+		ar, err := suite.testRepo.GetArticleById(t.requestID)
 		if err != nil {
-			if t.requestID == "" {
+			if t.requestID == 0 {
 				continue
 			}
-			suite.Fail(fmt.Sprintf("error when loading article by id %s, in test name %s", t.requestID, t.name))
+			suite.Fail(fmt.Sprintf("error when loading article by id %d, in test name %s", t.requestID, t.name))
 		}
 		suite.Equal(
 			t.expectedTitle,
@@ -312,13 +301,9 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 func (suite *databaseRequestTestSuite) TestGetCommentsByArticleId() {
 	for _, t := range testsForGetCommentsByArticleId {
 		c := generateNewGETRequest("/v1/article/:id/comments", t.pagination)
-		c.Params = []gin.Param{
-			{
-				Key:   "id",
-				Value: t.articleId,
-			},
-		}
-		list, err := suite.testRepo.GetCommentsByArticleId(c)
+		artId, err := strconv.Atoi(t.articleId)
+		suite.Nil(err, "should not be an error")
+		list, err := suite.testRepo.GetCommentsByArticleId(artId, c.Request)
 		if err != nil {
 			if t.articleId == "" {
 				continue

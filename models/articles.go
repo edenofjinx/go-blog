@@ -18,3 +18,10 @@ type ArticleWithContent struct {
 	Article
 	Content string `gorm:"type:text" json:"content"`
 }
+
+type ArticlePayload struct {
+	Title     string `json:"title"`
+	Content   string `json:"content"`
+	UserID    int    `json:"user_id"`
+	ArticleID int    `json:"article_id"`
+}
