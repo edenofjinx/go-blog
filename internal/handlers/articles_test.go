@@ -6,12 +6,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"io"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"os"
 	"strings"
 )
 
@@ -96,14 +93,68 @@ var testsForGetArticleById = []struct {
 	},
 }
 
-type testsForSaveArticle struct {
-	Tests []testForSaveArticle `json:"tests"`
+var testsForSaveArticle = []struct {
+	name         string
+	jsonData     string
+	expectedCode int
+}{
+	{
+		name:         "article with incorrect json",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1,\"id\": 1,,,}",
+		expectedCode: http.StatusInternalServerError,
+	},
+	{
+		name:         "article with incorrect base64 image png",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBOR w0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1,\"id\": 1}",
+		expectedCode: http.StatusInternalServerError,
+	},
+	{
+		name:         "article update with incorrect user id",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 99,\"id\": 1}",
+		expectedCode: http.StatusInternalServerError,
+	},
+	{
+		name:         "new article with correct json",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1}",
+		expectedCode: http.StatusAccepted,
+	},
+	{
+		name:         "new article with incorrect json",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 999}",
+		expectedCode: http.StatusInternalServerError,
+	},
+	{
+		name:         "article update with correct json",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1,\"id\": 1}",
+		expectedCode: http.StatusAccepted,
+	},
+	{
+		name:         "article update with incorrect json",
+		jsonData:     "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 999,\"id\": 1}",
+		expectedCode: http.StatusInternalServerError,
+	},
 }
 
-type testForSaveArticle struct {
-	Name         string                `json:"name"`
-	JsonData     models.ArticlePayload `json:"json_data"`
-	ExpectedCode int                   `json:"expected_code"`
+var testsForDeleteArticle = []struct {
+	name         string
+	articleId    string
+	expectedCode int
+}{
+	{
+		name:         "article id as set to string",
+		articleId:    "test",
+		expectedCode: http.StatusBadRequest,
+	},
+	{
+		name:         "article with given id is not available",
+		articleId:    "9584",
+		expectedCode: http.StatusAccepted,
+	},
+	{
+		name:         "successful article deletion",
+		articleId:    "1",
+		expectedCode: http.StatusAccepted,
+	},
 }
 
 func (suite *handlersTestSuite) TestGetArticlesList() {
@@ -143,39 +194,35 @@ func (suite *handlersTestSuite) TestGetArticleById() {
 }
 
 func (suite *handlersTestSuite) TestSaveArticle() {
-	jsonFile, err := os.Open("./testData/articles_test_save_article.json")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("Successfully Opened users.json")
-	// defer the closing of our jsonFile so that we can parse it later on
-	defer jsonFile.Close()
-	// read our opened xmlFile as a byte array.
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	var tests testsForSaveArticle
-	err = json.Unmarshal(byteValue, &tests)
-	if err != nil {
-		log.Println(err)
-	}
-	for i := 0; i < len(tests.Tests); i++ {
+	for _, t := range testsForSaveArticle {
 		rr := httptest.NewRecorder()
 		c, _ := gin.CreateTestContext(rr)
-		b, err := json.Marshal(tests.Tests[i].JsonData)
-		log.Println(b)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
 		req := &http.Request{
 			Method: http.MethodPost,
 			URL: &url.URL{
 				Path: "/v1/article/save",
 			},
-			Body: io.NopCloser(strings.NewReader(string(b))),
+			Body: io.NopCloser(strings.NewReader(t.jsonData)),
 		}
 		c.Request = req
 		suite.testHandlerRepo.SaveArticle(c)
 		status := rr.Code
-		suite.Equal(tests.Tests[i].ExpectedCode, status, fmt.Sprintf("status code should be %d but got %d", tests.Tests[i].ExpectedCode, status))
+		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d: %s", t.expectedCode, status, t.name))
+	}
+}
+
+func (suite *handlersTestSuite) TestDeleteArticle() {
+	var p testPagination
+	for _, t := range testsForDeleteArticle {
+		c, rr := generateNewGETRequest("/v1/article/:id", p)
+		c.Params = []gin.Param{
+			{
+				Key:   "id",
+				Value: t.articleId,
+			},
+		}
+		suite.testHandlerRepo.DeleteArticle(c)
+		status := rr.Code
+		suite.Equal(t.expectedCode, status, fmt.Sprintf("status code should be %d but got %d", t.expectedCode, status))
 	}
 }

@@ -119,30 +119,22 @@ func (suite *handlersTestSuite) SetupSuite() {
 	NewHandlers(handlerRepo)
 	suite.testHandlerRepo = handlerRepo
 	suite.testSQL = db
-	err = suite.testSQL.SQL.AutoMigrate(
-		&models.UserGroup{},
-		&models.User{},
-		&models.Article{},
-		&models.Comment{},
-	)
-	suite.Nil(err, "could not create test tables")
-	suite.testSQL.SQL.Create(&testUserGroups)
-	suite.testSQL.SQL.Create(&testUsers)
-	suite.testSQL.SQL.Create(&testArticles)
-	suite.testSQL.SQL.Create(&testComments)
+	seedTestTables(suite)
+}
+
+func (suite *handlersTestSuite) SetupTest() {
+	seedTestTables(suite)
+}
+
+func (suite *handlersTestSuite) TearDownTest() {
+	dropTestTables(suite)
 }
 
 func (suite *handlersTestSuite) TearDownSuite() {
-	err := suite.testSQL.SQL.Migrator().DropTable(
-		&models.UserGroup{},
-		&models.User{},
-		&models.Article{},
-		&models.Comment{},
-	)
-	suite.Nil(err, "could not drop test tables")
+	dropTestTables(suite)
 	_, b, _, _ := runtime.Caller(0)
 	root := filepath.Join(filepath.Dir(b), "../../")
-	err = os.RemoveAll(root + "/" + suite.testHandlerRepo.App.StaticImages)
+	err := os.RemoveAll(root + "/" + suite.testHandlerRepo.App.StaticImages)
 	suite.Nil(err, "could not remove test images from folder")
 }
 
@@ -175,4 +167,28 @@ func generateNewGETRequest(testUrl string, pagination testPagination) (*gin.Cont
 	}
 	c.Request = req
 	return c, rr
+}
+
+func dropTestTables(suite *handlersTestSuite) {
+	err := suite.testSQL.SQL.Migrator().DropTable(
+		&models.UserGroup{},
+		&models.User{},
+		&models.Article{},
+		&models.Comment{},
+	)
+	suite.Nil(err, "could not drop test tables")
+}
+
+func seedTestTables(suite *handlersTestSuite) {
+	err := suite.testSQL.SQL.AutoMigrate(
+		&models.UserGroup{},
+		&models.User{},
+		&models.Article{},
+		&models.Comment{},
+	)
+	suite.Nil(err, "could not create test tables")
+	suite.testSQL.SQL.Create(&testUserGroups)
+	suite.testSQL.SQL.Create(&testUsers)
+	suite.testSQL.SQL.Create(&testArticles)
+	suite.testSQL.SQL.Create(&testComments)
 }
