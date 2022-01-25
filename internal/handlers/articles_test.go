@@ -214,7 +214,7 @@ func (suite *handlersTestSuite) TestSaveArticle() {
 func (suite *handlersTestSuite) TestDeleteArticle() {
 	var p testPagination
 	for _, t := range testsForDeleteArticle {
-		c, rr := generateNewGETRequest("/v1/article/:id", p)
+		c, rr := generateNewGETRequest("/v1/comment/delete/:id", p)
 		c.Params = []gin.Param{
 			{
 				Key:   "id",
