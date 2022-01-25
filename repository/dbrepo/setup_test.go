@@ -116,17 +116,15 @@ func (suite *databaseRequestTestSuite) SetupSuite() {
 	}
 	suite.testRepo.App = &a
 	suite.testRepo.DB = db.SQL
-	err = suite.testRepo.DB.AutoMigrate(
-		&models.UserGroup{},
-		&models.User{},
-		&models.Article{},
-		&models.Comment{},
-	)
-	suite.Nil(err, "could not create test tables")
-	suite.testRepo.DB.Create(&testUserGroups)
-	suite.testRepo.DB.Create(&testUsers)
-	suite.testRepo.DB.Create(&testArticles)
-	suite.testRepo.DB.Create(&testComments)
+	seedTestTables(suite)
+}
+
+func (suite *databaseRequestTestSuite) SetupTest() {
+	seedTestTables(suite)
+}
+
+func (suite *databaseRequestTestSuite) TearDownTest() {
+	dropTestTables(suite)
 }
 
 func (suite *databaseRequestTestSuite) TearDownSuite() {
@@ -167,4 +165,28 @@ func generateNewGETRequest(testUrl string, pagination testPagination) *gin.Conte
 	}
 	c.Request = req
 	return c
+}
+
+func dropTestTables(suite *databaseRequestTestSuite) {
+	err := suite.testRepo.DB.Migrator().DropTable(
+		&models.UserGroup{},
+		&models.User{},
+		&models.Article{},
+		&models.Comment{},
+	)
+	suite.Nil(err, "could not drop test tables")
+}
+
+func seedTestTables(suite *databaseRequestTestSuite) {
+	err := suite.testRepo.DB.AutoMigrate(
+		&models.UserGroup{},
+		&models.User{},
+		&models.Article{},
+		&models.Comment{},
+	)
+	suite.Nil(err, "could not create test tables")
+	suite.testRepo.DB.Create(&testUserGroups)
+	suite.testRepo.DB.Create(&testUsers)
+	suite.testRepo.DB.Create(&testArticles)
+	suite.testRepo.DB.Create(&testComments)
 }

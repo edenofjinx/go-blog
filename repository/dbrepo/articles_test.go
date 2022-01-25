@@ -1,8 +1,9 @@
 package dbrepo
 
 import (
+	"bitbucket.org/julius_liaudanskis/go-blog/models"
+	"encoding/json"
 	"fmt"
-	"strconv"
 )
 
 var testsForGetArticlesList = []struct {
@@ -99,6 +100,72 @@ var testsForGetArticleById = []struct {
 	},
 }
 
+var testsForSaveArticle = []struct {
+	name          string
+	jsonData      string
+	expectedError bool
+}{
+	{
+		name:          "save article",
+		jsonData:      "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1}",
+		expectedError: false,
+	},
+	{
+		name:          "save article with empty data",
+		jsonData:      "{\"content\": \"\",\"title\": \"\",\"user_id\": 0}",
+		expectedError: true,
+	},
+	{
+		name:          "save article with incorrect data",
+		jsonData:      "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 999}",
+		expectedError: true,
+	},
+}
+
+var testsForUpdateArticle = []struct {
+	name          string
+	jsonData      string
+	expectedError bool
+}{
+	{
+		name:          "update article",
+		jsonData:      "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 1, \"id\": 1}",
+		expectedError: false,
+	},
+	{
+		name:          "save article with empty data",
+		jsonData:      "{\"content\": \"\",\"title\": \"\"}",
+		expectedError: true,
+	},
+	{
+		name:          "save article with incorrect data",
+		jsonData:      "{\"content\": \"<p>test</p><img src='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==' />\",\"title\": \"test title\",\"user_id\": 999, \"id\": 1}",
+		expectedError: true,
+	},
+}
+
+var testsForDeleteArticle = []struct {
+	name          string
+	articleId     int
+	expectedError bool
+}{
+	{
+		name:          "delete article with incorrect id",
+		articleId:     9999,
+		expectedError: false,
+	},
+	{
+		name:          "delete article with 0 id",
+		articleId:     0,
+		expectedError: false,
+	},
+	{
+		name:          "delete article",
+		articleId:     1,
+		expectedError: false,
+	},
+}
+
 func (suite *databaseRequestTestSuite) TestGetArticlesList() {
 	for _, t := range testsForGetArticlesList {
 		c := generateNewGETRequest("/v1/articles", t.pagination)
@@ -150,36 +217,50 @@ func (suite *databaseRequestTestSuite) TestGetArticleById() {
 	}
 }
 
-func (suite *databaseRequestTestSuite) TestGetCommentsByArticleId() {
-	for _, t := range testsForGetCommentsByArticleId {
-		c := generateNewGETRequest("/v1/article/:id/comments", t.pagination)
-		artId, err := strconv.Atoi(t.articleId)
-		suite.Nil(err, "should not be an error")
-		list, err := suite.testRepo.GetCommentsByArticleId(artId, c.Request)
-		if err != nil {
-			if t.articleId == "" {
-				continue
-			}
-			suite.Fail(fmt.Sprintf("failed to load articles in test name %s", t.name))
+func (suite *databaseRequestTestSuite) TestSaveArticle() {
+	for _, t := range testsForSaveArticle {
+		var payload models.ArticlePayload
+		var article models.Article
+		err := json.Unmarshal([]byte(t.jsonData), &payload)
+		suite.Nil(err, "should not be nil")
+		article.UserID = payload.UserID
+		article.Title = payload.Title
+		article.Content = payload.Content
+		err = suite.testRepo.SaveArticle(article)
+		if t.expectedError {
+			suite.Error(err, "should be an error")
+		} else {
+			suite.Nil(err, "should not be a nil")
 		}
-		l := len(list)
-		suite.Equal(
-			t.expectedLength,
-			l,
-			fmt.Sprintf("expected length %d is not equal to actual length %d in test name %s", t.expectedLength, l, t.name),
-		)
-		if t.expectedLength == 0 && l == t.expectedLength {
-			continue
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestUpdateArticle() {
+	for _, t := range testsForUpdateArticle {
+		var payload models.ArticlePayload
+		var article models.Article
+		err := json.Unmarshal([]byte(t.jsonData), &payload)
+		suite.Nil(err, "should not be nil")
+		article.UserID = payload.UserID
+		article.Title = payload.Title
+		article.Content = payload.Content
+		article.ID = payload.ID
+		err = suite.testRepo.UpdateArticle(article)
+		if t.expectedError {
+			suite.Error(err, "should be an error")
+		} else {
+			suite.Nil(err, "should not be a nil")
 		}
-		suite.Equal(
-			t.expectedUserID,
-			list[0].UserID,
-			fmt.Sprintf("expected and actual user id are not equal in test name %s", t.name),
-		)
-		suite.Equal(
-			t.expectedContent,
-			list[0].Content,
-			fmt.Sprintf("expected and actual content are not equal in test name %s", t.name),
-		)
+	}
+}
+
+func (suite *databaseRequestTestSuite) TestDeleteArticle() {
+	for _, t := range testsForDeleteArticle {
+		err := suite.testRepo.DeleteArticle(t.articleId)
+		if t.expectedError {
+			suite.Error(err, "should be an error")
+		} else {
+			suite.Nil(err, "should not be a nil")
+		}
 	}
 }
