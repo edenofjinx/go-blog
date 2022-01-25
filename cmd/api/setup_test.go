@@ -74,11 +74,11 @@ func (suite *TestMainPackage) SetupSuite() {
 }
 
 func (suite *TestMainPackage) SetupTest() {
-
+	os.Clearenv()
 }
 
 func (suite *TestMainPackage) TearDownSuite() {
-
+	os.Clearenv()
 }
 
 func TestMain(m *testing.M) {

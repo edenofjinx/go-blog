@@ -30,6 +30,11 @@ func (suite *TestMainPackage) TestSetServerPort() {
 	err = setServerPort(&cfg)
 	suite.Error(err, "should have error")
 	os.Setenv("APP_PORT", defaultAppPort)
+
+	e.setFlag()
+	err = e.fs.Set("env", "test")
+	suite.Nil(err, "env variable set should not throw an error")
+	e.setEnvironment(&cfg)
 }
 
 func (suite *TestMainPackage) TestSetDSN() {
@@ -76,9 +81,10 @@ func (suite *TestMainPackage) TestSetEnvironment() {
 	suite.Equal("production", cfg.env)
 
 	e.setFlag()
+	err = e.fs.Set("env", "test")
 	suite.Nil(err, "env variable set should not throw an error")
 	e.setEnvironment(&cfg)
-	suite.Equal("development", cfg.env)
+	suite.Equal("test", cfg.env)
 }
 
 func (suite *TestMainPackage) TestLoadEnvFile() {
@@ -100,6 +106,7 @@ func (suite *TestMainPackage) TestSetAppCfg() {
 
 func (suite *TestMainPackage) TestSetupDatabase() {
 	e.setFlag()
+	e.fs.Set("env", "test")
 	e.fs.Set("migrate", "true")
 	e.fs.Set("seed", "true")
 	e.parseEnvFlag()

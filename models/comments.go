@@ -14,6 +14,7 @@ type Comment struct {
 
 // CommentPayload struct for comment payload
 type CommentPayload struct {
+	ID        uint   `json:"id"`
 	Content   string `json:"content"`
 	UserID    int    `json:"user_id"`
 	ArticleID int    `json:"article_id"`

@@ -69,7 +69,6 @@ func (suite *TestMainPackage) TestVerifyApiKey() {
 		Environment:  "test",
 		StaticImages: "static/test/images/",
 	}
-	e.setFlag()
 	err := e.fs.Set("env", "test")
 	suite.Nil(err, "env flag should not throw an error")
 	e.setEnvironment(&cfg)
