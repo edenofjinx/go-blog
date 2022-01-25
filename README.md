@@ -62,7 +62,11 @@ go test -p=1 ./...
 /v1/article/:id #returns an article by id
 /v1/article/:id/comments #returns a list of comments
 # POST
-/v1/comment/save #saves a comment to an article
+/v1/comment/save #saves/edits a comment to an article
+/v1/article/save #saves/edits an article
+# DELETE
+/v1/article/delete/:id #deletes an article by id
+/v1/comment/delete/:id #deletes a comment by id
 ```
 A valid request needs to provide **api_key** in the header for authorization (except **/v1/status**).
 
@@ -77,12 +81,12 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 # TODO
 ### Endpoints
 * comments
-    - [ ] \(optional) edit comment
-    - [ ] \(optional) remove comment
+    - [X] \(optional) edit comment
+    - [X] \(optional) remove comment
 * articles
-    - [ ] \(optional) save article
-    - [ ] \(optional) edit article
-    - [ ] \(optional)remove article
+    - [X] \(optional) save article
+    - [X] \(optional) edit article
+    - [X] \(optional)remove article
 - [ ] \(optional) User registration
 - [ ] \(optional) User login
 
