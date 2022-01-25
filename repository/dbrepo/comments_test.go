@@ -126,7 +126,7 @@ var testsForGetCommentsByArticleId = []struct {
 	},
 }
 
-func (suite *databaseRequestTestSuite) TestInsertComment() {
+func (suite *databaseRequestTestSuite) TestSaveComment() {
 	for _, t := range testsForInsertComment {
 		var tc models.Comment
 		tc.ArticleID = t.articleID
@@ -134,7 +134,7 @@ func (suite *databaseRequestTestSuite) TestInsertComment() {
 		tc.Content = t.content
 		tc.CreatedAt = time.Now()
 		tc.UpdatedAt = time.Now()
-		err := suite.testRepo.InsertComment(tc)
+		err := suite.testRepo.SaveComment(tc)
 		if err != nil {
 			if t.expectedError {
 				continue
