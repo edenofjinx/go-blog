@@ -89,6 +89,7 @@ A valid request needs to provide **api_key** in the header for authorization (ex
     - [X] \(optional)remove article
 - [ ] \(optional) User registration
 - [ ] \(optional) User login
+- [ ] \(optional) Implement global settings from database
 
 ### Backend functionality
 - [X] \(optional) possibility to enable/disable migration|seed

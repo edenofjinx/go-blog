@@ -29,6 +29,12 @@ type commentRepository interface {
 }
 
 type userRepository interface {
+	CreateUser(user models.User) error
+	UpdateUser(user models.User) error
+	DeleteUser(userId int) error
+	UpdateUserPassword(user models.User) error
+	UpdateUserGroup(user models.User) error
+	UpdateUserApiKey(userId int) error
 	VerifyApiKeyExists(apiKey string) bool
 }
 
