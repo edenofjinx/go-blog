@@ -4,7 +4,7 @@ import (
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
-	"log"
+	"github.com/google/uuid"
 	"net/http"
 	"time"
 )
@@ -22,12 +22,11 @@ func (repo *Repository) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the user. Try again later."))
 		return
 	}
-	apiKey := models.GenerateToken(payload.Email)
 	var user models.User
 	user.Password = pw
 	user.Email = payload.Email
 	user.Name = payload.Name
-	user.ApiKey = apiKey
+	user.ApiKey = uuid.New().String()
 	user.UpdatedAt = time.Now()
 	user.CreatedAt = time.Now()
 	//TODO add default registered user group
@@ -84,8 +83,6 @@ func (repo *Repository) LoginUser(c *gin.Context) {
 		return
 	}
 	resp.ApiKey = user.ApiKey
-	log.Println(user)
-	log.Println(resp)
 	c.JSON(http.StatusAccepted, GetDataWrap(resp))
 	return
 }
@@ -118,4 +115,25 @@ func (repo *Repository) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("The password has been updated."))
+}
+
+func (repo *Repository) UpdateUserApiKey(c *gin.Context) {
+	var payload models.UserKeyPayload
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update your api key. Try again later."))
+		return
+	}
+	var user models.User
+	apiKey := uuid.New().String()
+	user.ID = payload.ID
+	user.ApiKey = apiKey
+	err = repo.DB.UpdateUser(user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could update the user password. Try again later."))
+		return
+	}
+	var resp models.UserKeyUpdateResponse
+	resp.ApiKey = apiKey
+	c.JSON(http.StatusAccepted, GetDataWrap(resp))
 }

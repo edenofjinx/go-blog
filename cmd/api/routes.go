@@ -43,5 +43,7 @@ func setProtectedRoutes(rg *gin.RouterGroup) {
 	rg.DELETE("/v1/comment/delete/:id", handlers.Repo.DeleteComment)
 	// users
 	rg.PUT("/v1/user/update", handlers.Repo.UpdateUser)
+	rg.PUT("/v1/user/update/password", handlers.Repo.UpdateUserPassword)
+	rg.PUT("/v1/user/update/key", handlers.Repo.UpdateUserApiKey)
 	rg.DELETE("/v1/user/delete", handlers.Repo.DeleteUser)
 }
