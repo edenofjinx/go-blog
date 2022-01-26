@@ -32,6 +32,7 @@ type userRepository interface {
 	CreateUser(user models.User) error
 	UpdateUser(user models.User) error
 	DeleteUser(userId int) error
+	GetUserByEmail(email string) (models.User, error)
 	UpdateUserPassword(user models.User) error
 	UpdateUserGroup(user models.User) error
 	UpdateUserApiKey(userId int) error

@@ -26,6 +26,15 @@ func (m *mysqlDatabaseRepo) DeleteUser(userId int) error {
 	return nil
 }
 
+func (m *mysqlDatabaseRepo) GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+	err := m.DB.Where(&models.User{Email: email}).First(&user)
+	if err.Error != nil {
+		return user, err.Error
+	}
+	return user, nil
+}
+
 func (m *mysqlDatabaseRepo) UpdateUserPassword(user models.User) error {
 	return nil
 }
@@ -44,7 +53,7 @@ func (m *mysqlDatabaseRepo) VerifyApiKeyExists(apiKey string) bool {
 	if apiKey == "" {
 		return false
 	}
-	m.DB.Model(&models.User{}).Where(&models.User{ApiKey: apiKey}).Count(&count)
+	m.DB.Where(&models.User{ApiKey: apiKey}).Count(&count)
 	if count == 0 {
 		return false
 	}
