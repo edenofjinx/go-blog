@@ -150,3 +150,22 @@ func (repo *Repository) UpdateUserApiKey(c *gin.Context) {
 	resp.ApiKey = apiKey
 	c.JSON(http.StatusAccepted, GetDataWrap(resp))
 }
+
+// UpdateUserGroup handler for updating a user's group
+func (repo *Repository) UpdateUserGroup(c *gin.Context) {
+	var payload struct {
+		ID      int `json:"id"`
+		GroupID int `json:"group_id"`
+	}
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update a user group. Error with message decode."))
+		return
+	}
+	err = repo.DB.UpdateUserGroup(payload.ID, payload.GroupID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update a user group. Try again later."))
+		return
+	}
+	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("The user group has been updated."))
+}

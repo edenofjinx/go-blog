@@ -45,5 +45,6 @@ func setProtectedRoutes(rg *gin.RouterGroup) {
 	rg.PUT("/v1/user/update", handlers.Repo.UpdateUser)
 	rg.PUT("/v1/user/update/password", handlers.Repo.UpdateUserPassword)
 	rg.PUT("/v1/user/update/key", handlers.Repo.UpdateUserApiKey)
+	rg.PUT("/v1/user/update/group", handlers.Repo.UpdateUserGroup)
 	rg.DELETE("/v1/user/delete", handlers.Repo.DeleteUser)
 }

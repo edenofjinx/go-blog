@@ -74,6 +74,7 @@ go test -p=1 ./...
 /v1/user/update #updates user information
 /v1/user/update/password #updates user password
 /v1/user/update/key #updates user api key
+/v1/user/update/group #updates the user's group
 ```
 A valid request needs to provide **api_key** in the header for authorization (except **/v1/status**).
 
@@ -87,27 +88,12 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 
 # TODO
 ### Endpoints
-* comments
-    - [X] \(optional) edit comment
-    - [X] \(optional) remove comment
-* articles
-    - [X] \(optional) save article
-    - [X] \(optional) edit article
-    - [X] \(optional) remove article
 * user groups
     - [ ] \(optional) create/edit/remove user group
-    - [ ] \(optional) assign/change user groups for users
     - [ ] \(optional) admin user group content restriction
-- [X] \(optional) User registration
-- [X] \(optional) User login
-- [X] \(optional) Delete user (delete account)
 - [ ] \(optional) Move seed data to env files
 - [ ] \(optional) Implement global settings from database
 - [ ] \(optional) Implement admin functions
-
-### Backend functionality
-- [X] \(optional) possibility to enable/disable migration|seed
-- [X] \(optional) switch httprouter to gin
 
 ### React frontend
 - [ ] \(optional) create a react frontend app

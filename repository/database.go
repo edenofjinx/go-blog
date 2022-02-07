@@ -34,11 +34,11 @@ type userRepository interface {
 	DeleteUser(userId int) error
 	GetUserByEmail(email string) (models.User, error)
 	UpdateUserPassword(user models.User) error
-	UpdateUserGroup(user models.User) error
+	UpdateUserGroup(userId, groupId int) error
 	UpdateUserApiKey(userId int) (string, error)
 	VerifyApiKeyExists(apiKey string) bool
 }
 
 type userGroupRepository interface {
-	//TODO
+	//TODO user group functionality
 }

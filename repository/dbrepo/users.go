@@ -51,9 +51,12 @@ func (m *mysqlDatabaseRepo) UpdateUserPassword(user models.User) error {
 	return nil
 }
 
-// UpdateUserGroup updates a user group
-func (m *mysqlDatabaseRepo) UpdateUserGroup(user models.User) error {
-	// TODO add func
+// UpdateUserGroup updates a user's group
+func (m *mysqlDatabaseRepo) UpdateUserGroup(userId, groupId int) error {
+	err := m.DB.Model(&models.User{}).Where("id = ?", userId).Update("group_id", groupId)
+	if err.Error != nil {
+		return err.Error
+	}
 	return nil
 }
 
