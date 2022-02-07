@@ -9,7 +9,7 @@ import (
 // User struct for users
 type User struct {
 	gorm.Model
-	Email         string    `gorm:"type:varchar(100);unique;not null" json:"email"`
+	Email         string    `gorm:"type:varchar(100);index;unique;not null" json:"email"`
 	Password      string    `gorm:"type:varchar(250);not null" json:"-"`
 	Name          string    `gorm:"type:varchar(100);not null" json:"name"`
 	ApiKey        string    `gorm:"type:varchar(60);index" json:"api_key"`

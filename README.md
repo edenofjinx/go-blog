@@ -64,9 +64,16 @@ go test -p=1 ./...
 # POST
 /v1/comment/save #saves/edits a comment to an article
 /v1/article/save #saves/edits an article
+/v1/user/create #creates a new user (registration)
+/v1/user/login #returns user data (login info) if user is valid
 # DELETE
 /v1/article/delete/:id #deletes an article by id
 /v1/comment/delete/:id #deletes a comment by id
+/v1/user/delete #deletes a user
+# PUT
+/v1/user/update #updates user information
+/v1/user/update/password #updates user password
+/v1/user/update/key #updates user api key
 ```
 A valid request needs to provide **api_key** in the header for authorization (except **/v1/status**).
 
@@ -87,9 +94,11 @@ A valid request needs to provide **api_key** in the header for authorization (ex
     - [X] \(optional) save article
     - [X] \(optional) edit article
     - [X] \(optional)remove article
-- [ ] \(optional) User registration
-- [ ] \(optional) User login
+- [X] \(optional) User registration
+- [X] \(optional) User login
+- [X] \(optional) Delete user (delete account)
 - [ ] \(optional) Implement global settings from database
+- [ ] \(optional) Implement admin functions
 
 ### Backend functionality
 - [X] \(optional) possibility to enable/disable migration|seed

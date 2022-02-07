@@ -89,7 +89,20 @@ func (repo *Repository) LoginUser(c *gin.Context) {
 
 // DeleteUser is a handler for deleting a user
 func (repo *Repository) DeleteUser(c *gin.Context) {
-
+	var payload struct {
+		ID int `json:"id"`
+	}
+	err := json.NewDecoder(c.Request.Body).Decode(&payload)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not decode the message. Try again later."))
+		return
+	}
+	err = repo.DB.DeleteUser(payload.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not delete the user."))
+		return
+	}
+	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("The user has been deleted."))
 }
 
 // UpdateUserPassword is a handler for updating a users password
@@ -109,7 +122,7 @@ func (repo *Repository) UpdateUserPassword(c *gin.Context) {
 	user.Password = pw
 	user.UpdatedAt = time.Now()
 	user.ID = payload.ID
-	err = repo.DB.UpdateUser(user)
+	err = repo.DB.UpdateUserPassword(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could update the user password. Try again later."))
 		return
@@ -117,20 +130,19 @@ func (repo *Repository) UpdateUserPassword(c *gin.Context) {
 	c.JSON(http.StatusAccepted, GetSuccessMessageWrap("The password has been updated."))
 }
 
+// UpdateUserApiKey handler for user api key update
 func (repo *Repository) UpdateUserApiKey(c *gin.Context) {
-	var payload models.UserKeyPayload
+	var payload struct {
+		ID int `json:"id"`
+	}
 	err := json.NewDecoder(c.Request.Body).Decode(&payload)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update your api key. Try again later."))
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update your api key. Error with message decode."))
 		return
 	}
-	var user models.User
-	apiKey := uuid.New().String()
-	user.ID = payload.ID
-	user.ApiKey = apiKey
-	err = repo.DB.UpdateUser(user)
+	apiKey, err := repo.DB.UpdateUserApiKey(payload.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could update the user password. Try again later."))
+		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not update your api key. Try again later."))
 		return
 	}
 	var resp models.UserKeyUpdateResponse

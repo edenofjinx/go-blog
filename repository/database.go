@@ -35,7 +35,7 @@ type userRepository interface {
 	GetUserByEmail(email string) (models.User, error)
 	UpdateUserPassword(user models.User) error
 	UpdateUserGroup(user models.User) error
-	UpdateUserApiKey(userId int) error
+	UpdateUserApiKey(userId int) (string, error)
 	VerifyApiKeyExists(apiKey string) bool
 }
 
