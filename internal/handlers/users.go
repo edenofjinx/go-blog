@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bitbucket.org/julius_liaudanskis/go-blog/internal"
 	"bitbucket.org/julius_liaudanskis/go-blog/models"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
@@ -17,7 +18,7 @@ func (repo *Repository) CreateUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the user. Try again later."))
 		return
 	}
-	pw, err := models.HashPassword(payload.Password)
+	pw, err := internal.HashPassword(payload.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could not save the user. Try again later."))
 		return
@@ -78,7 +79,7 @@ func (repo *Repository) LoginUser(c *gin.Context) {
 		return
 	}
 	var resp models.UserLoginResponse
-	if !models.CheckPasswordHash(payload.Password, user.Password) {
+	if !internal.CheckPasswordHash(payload.Password, user.Password) {
 		c.JSON(http.StatusForbidden, GetErrorMessageWrap("Password is incorrect. Try again."))
 		return
 	}
@@ -114,7 +115,7 @@ func (repo *Repository) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 	var user models.User
-	pw, err := models.HashPassword(payload.Password)
+	pw, err := internal.HashPassword(payload.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, GetErrorMessageWrap("Could update the user password. Try again later."))
 		return

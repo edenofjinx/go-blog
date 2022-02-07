@@ -56,6 +56,7 @@ func seedUserGroups(db *driver.DB) error {
 // seedUsers seeds users table if empty
 func seedUsers(db *driver.DB) error {
 	//TODO add password hash to password seed and etc
+	//TODO add seed data to env files
 	var users = []models.User{
 		{
 			Email:    "some@email.com",
