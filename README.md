@@ -91,9 +91,13 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 * user groups
     - [ ] \(optional) create/edit/remove user group
     - [ ] \(optional) admin user group content restriction
+
+### Backend
 - [ ] \(optional) Move seed data to env files
 - [ ] \(optional) Implement global settings from database
 - [ ] \(optional) Implement admin functions
+- [ ] \(optional) Implement GraphQL
+- [ ] Update tests, use mocks
 
 ### React frontend
 - [ ] \(optional) create a react frontend app
