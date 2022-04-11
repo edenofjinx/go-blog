@@ -55,16 +55,22 @@ func seedUserGroups(db *driver.DB) error {
 
 // seedUsers seeds users table if empty
 func seedUsers(db *driver.DB) error {
+	//TODO add password hash to password seed and etc
+	//TODO add seed data to env files
 	var users = []models.User{
 		{
-			Name:    "Admin",
-			ApiKey:  "8c3751f5-39f8-4672-8362-1d83e3169ae3",
-			GroupID: 1,
+			Email:    "some@email.com",
+			Password: "somepass",
+			Name:     "Admin",
+			ApiKey:   "8c3751f5-39f8-4672-8362-1d83e3169ae3",
+			GroupID:  1,
 		},
 		{
-			Name:    "Registered",
-			ApiKey:  "80f45b24-874b-4e96-9e69-0efd000eca4a",
-			GroupID: 2,
+			Email:    "some@gmail.com",
+			Password: "somepass",
+			Name:     "Registered",
+			ApiKey:   "80f45b24-874b-4e96-9e69-0efd000eca4a",
+			GroupID:  2,
 		},
 	}
 	if db.SQL.Migrator().HasTable(&models.User{}) {

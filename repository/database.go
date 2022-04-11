@@ -29,9 +29,16 @@ type commentRepository interface {
 }
 
 type userRepository interface {
+	CreateUser(user models.User) error
+	UpdateUser(user models.User) error
+	DeleteUser(userId int) error
+	GetUserByEmail(email string) (models.User, error)
+	UpdateUserPassword(user models.User) error
+	UpdateUserGroup(userId, groupId int) error
+	UpdateUserApiKey(userId int) (string, error)
 	VerifyApiKeyExists(apiKey string) bool
 }
 
 type userGroupRepository interface {
-	//TODO
+	//TODO user group functionality
 }

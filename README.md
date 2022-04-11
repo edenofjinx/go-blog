@@ -64,9 +64,17 @@ go test -p=1 ./...
 # POST
 /v1/comment/save #saves/edits a comment to an article
 /v1/article/save #saves/edits an article
+/v1/user/create #creates a new user (registration)
+/v1/user/login #returns user data (login info) if user is valid
 # DELETE
 /v1/article/delete/:id #deletes an article by id
 /v1/comment/delete/:id #deletes a comment by id
+/v1/user/delete #deletes a user
+# PUT
+/v1/user/update #updates user information
+/v1/user/update/password #updates user password
+/v1/user/update/key #updates user api key
+/v1/user/update/group #updates the user's group
 ```
 A valid request needs to provide **api_key** in the header for authorization (except **/v1/status**).
 
@@ -80,19 +88,16 @@ A valid request needs to provide **api_key** in the header for authorization (ex
 
 # TODO
 ### Endpoints
-* comments
-    - [X] \(optional) edit comment
-    - [X] \(optional) remove comment
-* articles
-    - [X] \(optional) save article
-    - [X] \(optional) edit article
-    - [X] \(optional)remove article
-- [ ] \(optional) User registration
-- [ ] \(optional) User login
+* user groups
+    - [ ] \(optional) create/edit/remove user group
+    - [ ] \(optional) admin user group content restriction
 
-### Backend functionality
-- [X] \(optional) possibility to enable/disable migration|seed
-- [X] \(optional) switch httprouter to gin
+### Backend
+- [ ] \(optional) Move seed data to env files
+- [ ] \(optional) Implement global settings from database
+- [ ] \(optional) Implement admin functions
+- [ ] \(optional) Implement GraphQL
+- [ ] Update tests, use mocks
 
 ### React frontend
 - [ ] \(optional) create a react frontend app
